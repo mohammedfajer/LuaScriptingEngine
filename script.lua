@@ -1,11 +1,4 @@
--- Define the `mo` table
--- mo = {}
 
-
--- Import the custom graphics library
--- local graphics = require("graphics")
--- Load the keyboard library
-local keyboard = require("keyboard")
 
 local player = require("player")
 
@@ -30,16 +23,38 @@ function mo.update(dt)
   --  print("Lua mo.update(dt): " .. dt)
 
 
-  
-
+   
     -- Use SDL Keycode for 'A' (typically SDLK_a in SDL)
     
 
     -- Check if 'A' is pressed
-    if keyboard.isKeyDown(KeyCode.KEY_A) then
+    if mo.keyboard.isKeyDown(KeyCode.KEY_A) then
         print("A was pressed")
         x = x + 1
     end
+
+
+    -- Update frame timing
+    mo.timer.step()
+
+    -- Get delta time
+    local delta = mo.timer.getDelta()
+    print("Delta time: " .. delta .. " ms")
+
+    -- Get average delta time
+    local avgDelta = mo.timer.getAverageDelta()
+    print("Average delta time: " .. avgDelta .. " ms")
+
+    -- Get current FPS
+    local fps = mo.timer.getFPS()
+    print("FPS: "  .. fps)
+
+    -- Get current time
+    local time = mo.timer.getTime()
+    print("Current time: " .. time .. " seconds since epoch")
+
+    -- Sleep for 1000ms (1 second)
+    mo.timer.sleep(1000)
 
 end
 

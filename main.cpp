@@ -17,9 +17,12 @@ extern "C"
 
 #include "keyboard.h"
 #include "graphics.h"
+#include "timer.h"
+
 
 SDL_Window *gWindow = nullptr;
 SDL_Renderer *gRenderer = nullptr;
+
 
 
 std::chrono::system_clock::time_point getFileModificationTime(const std::string &filePath) {
@@ -135,14 +138,27 @@ int main(int argc, char *argv[])
 	luaL_requiref(L, "keyboard", luaopen_keyboard, 1);
 	lua_pop(L, 1); // Remove the module from the stack
 
+	// Load the custom timer library
+	luaL_requiref(L, "timer", luaopen_timer, 1);
+	lua_pop(L, 1);
+
 
 	// Create the "mo" table implicitly
 	lua_newtable(L); // create a new table
 
 	// Add the custom libraries as sub-tables implicitly
+	
+	// Load and set the graphics library
 	lua_getglobal(L, "graphics"); // Load the graphics library
 	lua_setfield(L, -2, "graphics"); // Set it as the field of the `mo` table
 
+	// Load and set the keyboard library
+	lua_getglobal(L, "keyboard"); // Load the keyboard library
+	lua_setfield(L, -2, "keyboard"); // Set it as the field of the `mo` table
+
+	// Load and set the timer library
+	lua_getglobal(L, "timer"); // Load the timer library
+	lua_setfield(L, -2, "timer"); // Set it as the field of the `mo` table
 
 
 	lua_setglobal(L, "mo"); // Push the table onto the stack
@@ -195,13 +211,17 @@ int main(int argc, char *argv[])
 
 	// Event handler
 	SDL_Event e;
-	Uint32 lastTime = SDL_GetTicks();
+	//Uint32 lastTime = SDL_GetTicks();
+
+	
 
 	// While the application is running
 	while (!quit) {
-		Uint32 currentTime = SDL_GetTicks();
-		float deltaTime = (currentTime - lastTime) / 1000.0f;
-		lastTime = currentTime;
+		//Uint32 currentTime = SDL_GetTicks();
+		//float deltaTime = (currentTime - lastTime) / 1000.0f;
+		//lastTime = currentTime;
+
+		update_timer_module();
 
 		// Handle events on the queue
 		while (SDL_PollEvent(&e) != 0) {
@@ -217,7 +237,7 @@ int main(int argc, char *argv[])
 		lua_getglobal(L, "mo");
 		lua_getfield(L, -1, "update");
 		if (lua_isfunction(L, -1)) {
-			lua_pushnumber(L, deltaTime);
+			lua_pushnumber(L, gTimeInfo.deltaTime);
 			if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
 				std::cerr << "Error calling mo.update: " << lua_tostring(L, -1) << std::endl;
 				lua_pop(L, 1);

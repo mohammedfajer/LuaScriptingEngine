@@ -138,6 +138,7 @@
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="player.lua" />
@@ -146,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="graphics.h" />
     <ClInclude Include="keyboard.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.jpg" />

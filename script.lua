@@ -1,9 +1,9 @@
 -- Define the `mo` table
-mo = {}
+-- mo = {}
 
 
 -- Import the custom graphics library
-local graphics = require("graphics")
+-- local graphics = require("graphics")
 -- Load the keyboard library
 local keyboard = require("keyboard")
 
@@ -15,13 +15,13 @@ function mo.load()
     -- Initialization code, if any
     print("Lua mo.load Call")
 
-    graphics.setBackgroundColor(12, 100, 239, 255)
+    mo.graphics.setBackgroundColor(12, 100, 239, 255)
 
     player.load()
 
-    bunny = graphics.newImage("bunny.jpg")
+    bunny = mo.graphics.newImage("data/bunny.jpg")
 
-    top_left = graphics.newQuad(0, 0, 512, 512, bunny)
+    top_left = mo.graphics.newQuad(0, 0, 512, 512, bunny)
 
 end
 
@@ -45,17 +45,17 @@ end
 
 function mo.draw()
  -- graphics.setBackgroundColor(0, 123, 239, 255)
-    graphics.setBackgroundColor(12, 100, 239, 255)
+    mo.graphics.setBackgroundColor(12, 100, 239, 255)
 
     -- Draw a filled rectangle at coordinates (20, 50) with width 60 and height 120
 
 
-    graphics.rectangle("fill", x, 50, 60, 120)
+    mo.graphics.rectangle("fill", x, 50, 60, 120)
 
-    graphics.rectangle("line", 100, 100, 50, 100)
+    mo.graphics.rectangle("line", 100, 100, 50, 100)
 
 
-    --- graphics.draw(bunny, 0, 0)
-    graphics.drawQuad(bunny, top_left, 100, 50)
+    mo.graphics.draw(bunny, 0, 0)
+   --- graphics.drawQuad(bunny, top_left, 100, 50)
 
 end

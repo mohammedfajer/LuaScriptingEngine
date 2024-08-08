@@ -51,5 +51,50 @@
    mo.timer.sleep(1000)
 ```
 
+- 
+
+# Graphics
+
+- [x] Draw a line between two points `drawLine`
+- [x] Set Render Draw Colour `setDrawColor`
+- [x] Draw point, points, and a polygon
+- draws text on screen, if no font is set, one will be created and set (once) if needed
+- draws a formatted text, with word wrap and alignment
+- draws a quadrilateral shape
+- draws rectangle
+- draws a triangle
+- draws ellipse
+- draw (overload) with textures, rotation, scale, pivot etc...
+
+optional
+
+- sfml or raylib with shader support
+- sprite batching
 
 
+
+200 200 100 100
+
+
+
+Topics and Systems
+
+- shapes
+- sprites
+
+- sprite sheet animation
+- tile maps
+- camera system, screen shake
+- 2d game math
+- audio
+- particle system
+- lighting and shader coding
+- easing functions
+- physics and collisions
+- path finding algorithms
+- ai, behaviour trees
+- networking basics
+- state machines
+- algorithms, data structure, design patterns
+- profiling and optimization
+- 

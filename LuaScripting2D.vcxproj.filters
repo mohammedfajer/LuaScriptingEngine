@@ -13,43 +13,154 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Modules">
+      <UniqueIdentifier>{e903ad82-db3b-40ee-8bca-de5cbc0cc003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts Docs">
+      <UniqueIdentifier>{f5b9fe0e-e251-4814-b9a3-3b282442b3e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SFML and Box2D Experiments">
+      <UniqueIdentifier>{51ef9d2e-aaea-4087-ad25-9809347f1b2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SFML Core Experiments">
+      <UniqueIdentifier>{ed06ed78-9658-49c7-bd0f-7f8e95fd649f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SFML Systems">
+      <UniqueIdentifier>{5d4c917d-04cd-422b-a39f-035bb72aa45b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lua Embedding">
+      <UniqueIdentifier>{e49aaaa1-ed4e-4c4b-ac7b-e5dc91672649}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lua Embedding\Exposing Functions">
+      <UniqueIdentifier>{f9f0b60d-8816-48b3-b143-fac9696f2ae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lua Embedding\Exposing Globals">
+      <UniqueIdentifier>{3560b993-45a4-4d8a-a176-cb7ad4dfdf67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lua Embedding\Exposing Tables">
+      <UniqueIdentifier>{38495033-94b8-4ddc-8828-d22bbb216a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lua Embedding\Custom Libraries">
+      <UniqueIdentifier>{5ef09b45-a23a-4697-b447-85c5f8eb10df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="sfml_window.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_basic_shapes.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_handling_input.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_working_with_text.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_textures.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_timing.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_shaders.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_particles.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_virtual_resolution.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_joystick.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_audio.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_box2d_basic.cpp">
+      <Filter>Source Files\SFML and Box2D Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_basic_ui.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
     </ClCompile>
     <ClCompile Include="graphics.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard.cpp">
+      <Filter>Source Files\Modules</Filter>
     </ClCompile>
     <ClCompile Include="timer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="test_luabridge.cpp">
+      <Filter>Source Files\Lua Embedding\Exposing Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="luabridge_globals.cpp">
+      <Filter>Source Files\Lua Embedding\Exposing Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="luabridge_tables.cpp">
+      <Filter>Source Files\Lua Embedding\Exposing Tables</Filter>
+    </ClCompile>
+    <ClCompile Include="luabridge_custom_lib.cpp">
+      <Filter>Source Files\Lua Embedding\Custom Libraries</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="script.lua">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="player.lua">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scripts Docs</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="keyboard.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="graphics.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="timer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
+    <None Include="script.lua">
+      <Filter>Source Files\Scripts Docs</Filter>
+    </None>
+    <None Include="script_stars.lua">
+      <Filter>Source Files\Scripts Docs</Filter>
+    </None>
+    <None Include="script_polygons.lua">
+      <Filter>Source Files\Scripts Docs</Filter>
+    </None>
+    <None Include="data\grayscale.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\grayscale.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\pulse.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\pulse.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test_functions.lua">
+      <Filter>Source Files\Lua Embedding\Exposing Functions</Filter>
+    </None>
+    <None Include="test_globals.lua">
+      <Filter>Source Files\Lua Embedding\Exposing Globals</Filter>
+    </None>
+    <None Include="test_tables.lua">
+      <Filter>Source Files\Lua Embedding\Exposing Tables</Filter>
+    </None>
+    <None Include="test_custom_library.lua">
+      <Filter>Source Files\Lua Embedding\Custom Libraries</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="graphics.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

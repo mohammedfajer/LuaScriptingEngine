@@ -1,0 +1,53 @@
+
+
+Graphics	SFML 
+Fonts		SFML
+Audio		SFML
+Shaders		SFML
+JoyStick	SFML
+Keyboard	SFML
+Mouse		SFML
+
+Physics		BOX2D
+
+-----------------
+
+Taken From Love
+	common
+	math
+	filesystem ?
+	system ?
+	thread ?
+	physics ?
+
+
+
+
+
+
+TODO
+	sprite sheet animation
+	screen scrolling and views, viewports, camera shake
+	split screens
+	parallax background
+	camera effects
+	scockets, packets,
+	tilemaps, tilemap collisions
+	box collision, distance based collision, pixel perfect collision
+	lights, blooms, effects, etc...
+	procedural generation
+	ai pathfinding
+	menus, visual effects
+	level editor, particles editor, etc...
+	etc...
+	icons
+	packaging and distributing your game
+	letter boxing, aspect ratiom, scaling
+	
+	os, system, window, event system, threading, etc...
+	maybe imgui 
+
+
+newQuad
+newImage
+draw (overload)

@@ -28,6 +28,12 @@
     <Filter Include="Source Files\SFML Systems">
       <UniqueIdentifier>{5d4c917d-04cd-422b-a39f-035bb72aa45b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Thirdparty">
+      <UniqueIdentifier>{a06283fa-be60-4de9-a5aa-5c23ce4f533f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scripts Docs\Pong Game">
+      <UniqueIdentifier>{8da0e233-4421-4cc1-84e8-6091926bb0b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,11 +78,32 @@
     <ClCompile Include="sfml_basic_ui.cpp">
       <Filter>Source Files\SFML Systems</Filter>
     </ClCompile>
+    <ClCompile Include="graphics.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="window.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="audio.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="physics.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="event.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="core.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="script.lua">
-      <Filter>Source Files\Scripts Docs</Filter>
-    </None>
     <None Include="data\grayscale.frag">
       <Filter>Resource Files</Filter>
     </None>
@@ -89,10 +116,39 @@
     <None Include="data\pulse.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="script.lua">
+      <Filter>Source Files\Scripts Docs\Pong Game</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="graphics.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="window.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="audio.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="physics.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="event.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="core.h">
+      <Filter>Source Files\Modules</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

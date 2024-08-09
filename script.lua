@@ -1,25 +1,44 @@
+
+
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+
+
 -- This function is called when the script is loaded
 function mo.load()
-    print("From mo.load()")
     
-    hamster = mo.graphics.newImage("./data/bunny.jpg")
+    mo.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
+        fullscreen = false,
+        resizable = false,
+        vsync = true
+    })
 
-    angle = 0
+   
+
+   mo.window.setTitle('Pong')
 end
 
 -- This function is called every frame with the delta time
 function mo.update(dt)
-    print("From mo.update(dt)")
-    
-    
+   
 end
 
 -- This function is called every frame to draw objects
 function mo.draw()
-    print("From mo.draw()")
-    
-    mo.graphics.drawSomething()
-    mo.graphics.draw(hamster, 100, 100, angle, 50, 50, true)
+   
+end
 
-    angle = angle + 1
+--[[
+	Keyboard handling, called my MO2D each frame;
+	passes in the key we pressed so we can access.
+]]
+
+function mo.keypressed(key)
+	if key == 'A' then 
+		print("Key A pressed")
+	end
+
+	if key == 'escape' then
+		mo.event.quit()
+	end
 end

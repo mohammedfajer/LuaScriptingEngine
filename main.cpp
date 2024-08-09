@@ -1,212 +1,469 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
+
+
 extern "C"
 {
-#include <lua.hpp>
+	#include <lua.hpp>
+#include <lualib.h>
+#include <lauxlib.h>
+
+
 }
 
+// NOTE(MO) it worked when I changed c++ version to 17.
+#define SOL_ALL_SAFETIES_ON 1
+#include <sol/sol.hpp>
 
 #include <vector>
 
+#include "audio.h"
+
+// Global pointer to the SFML window
 sf::RenderWindow *g_window = nullptr;
-
-
-int lua_drawAnything(lua_State *L) {
-	if (g_window == nullptr) {
-		return luaL_error(L, "RenderWindow is not initialized!");
-	}
-
-	sf::CircleShape shape(50);
-	shape.setFillColor(sf::Color::Green);
-	g_window->draw(shape);
-	return 0; // Number of return values to Lua
+sf::Color backgroundColor(sf::Color::Black); // Default color
+// Font to use for rendering text
+sf::Font font;
+// Load the font
+bool load_font(const std::string &font_path) {
+	return font.loadFromFile(font_path);
 }
 
-// Create a new image from a file and return a reference to it
-static int lua_newImage(lua_State *L) {
-	const char *filename = luaL_checkstring(L, 1);
-	sf::Texture *texture = new sf::Texture();
-	if (!texture->loadFromFile(filename)) {
-		delete texture;
-		return luaL_error(L, "Failed to load image: %s", filename);
-	}
-	// Store texture in userdata
-	sf::Texture **userdata = static_cast<sf::Texture **>(lua_newuserdata(L, sizeof(sf::Texture *)));
-	*userdata = texture;
-	luaL_getmetatable(L, "sfTexture");
-	lua_setmetatable(L, -2);
-	return 1;
+
+#pragma region Graphics Module
+
+#include <unordered_map>
+#include <memory>
+
+// Function to convert Lua table to sf::Color
+sf::Color lua_to_color(const sol::table &color_table) {
+	uint8_t r = color_table.get_or("r", 255);
+	uint8_t g = color_table.get_or("g", 255);
+	uint8_t b = color_table.get_or("b", 255);
+	uint8_t a = color_table.get_or("a", 255);
+	return sf::Color(r, g, b, a);
 }
 
-// Draw an image onto the global SFML window
-//static int lua_draw(lua_State *L) {
-//	sf::Texture *texture = *static_cast<sf::Texture **>(luaL_checkudata(L, 1, "sfTexture"));
-//	sf::Sprite sprite(*texture);
-//	sprite.setPosition(static_cast<float>(luaL_checknumber(L, 2)), static_cast<float>(luaL_checknumber(L, 3)));
-//
-//	g_window->draw(sprite);
-//	return 0;
-//}
+// Container to hold loaded textures
+std::unordered_map<std::string, std::shared_ptr<sf::Texture>> textures;
 
-// Draw an image onto the global SFML window
-static int lua_draw(lua_State *L) {
-	// Check the type of the first argument and ensure it's userdata for sf::Texture
-	sf::Texture *texture = *static_cast<sf::Texture **>(luaL_checkudata(L, 1, "sfTexture"));
-
-	// Create a sprite from the texture
-	sf::Sprite sprite(*texture);
-
-	// Get position from the second and third arguments
-	float x = static_cast<float>(luaL_checknumber(L, 2));
-	float y = static_cast<float>(luaL_checknumber(L, 3));
-
-	// Check if a fourth argument is provided (rotation angle)
-	float rotation = 0.0f; // Default value
-	if (lua_gettop(L) >= 4) {
-		rotation = static_cast<float>(luaL_checknumber(L, 4));
+// Function to load a texture from a file
+std::shared_ptr<sf::Texture> load_texture(const std::string &file_path) {
+	auto texture = std::make_shared<sf::Texture>();
+	if (texture->loadFromFile(file_path)) {
+		textures[file_path] = texture;
+		return texture;
 	}
-
-	float desiredWidth = texture->getSize().x;
-	float desiredHeight = texture->getSize().y;
-
-	if (lua_gettop(L) >= 6)
-	{
-		desiredWidth = static_cast<float>(luaL_checknumber(L, 5));
-		desiredHeight = static_cast<float>(luaL_checknumber(L, 6));
-	}
-
-	// Get the original size of the texture
-	sf::Vector2u textureSize = texture->getSize();
-
-	// Calculate the scale factors
-	float scaleX = desiredWidth / textureSize.x;
-	float scaleY = desiredHeight / textureSize.y;
-
-	// Set the sprite scale
-	sprite.setScale(scaleX, scaleY);
-
-	bool centerIt = false;
-	if (lua_gettop(L) >= 7)
-	{
-		centerIt = static_cast<bool>( lua_toboolean(L, 7) );
-	}
-
-	if (centerIt)
-	{
-		// Set the origin to the center of the sprite
-		sprite.setOrigin(desiredWidth / 2.0f, desiredHeight / 2.0f);
-	}
-
-	// Set sprite properties
-	sprite.setPosition(x, y);
-	sprite.setRotation(rotation);
-
-	// Draw the sprite onto the global SFML window
-	g_window->draw(sprite);
-	return 0;
+	std::cerr << "Failed to load texture: " << file_path << std::endl;
+	return nullptr;
 }
 
-static const luaL_Reg graphicsLib[] = {
-		{"drawSomething", lua_drawAnything },
-		{"newImage", lua_newImage},
-		{"draw", lua_draw},
-		{NULL, NULL}
+// Function to get a texture by file path
+std::shared_ptr<sf::Texture> get_texture(const std::string &file_path) {
+	auto it = textures.find(file_path);
+	if (it != textures.end()) {
+		return it->second;
+	}
+	return load_texture(file_path);
+}
+
+// Dummy module namespace
+namespace graphics {
+
+
+	enum class AlignMode
+	{
+		center,
+		left,
+		right,
+		justify
+	};
+
+	void draw_rectangle(float x, float y, float width, float height, sol::optional<sol::table> color_table = sol::nullopt) {
+		if (g_window == nullptr) return; // Ensure g_window is valid
+
+		sf::Color color = color_table ? lua_to_color(*color_table) : sf::Color::White;
+
+		sf::RectangleShape rectangle(sf::Vector2f(width, height));
+		rectangle.setPosition(x, y);
+		rectangle.setFillColor(color);
+		g_window->draw(rectangle);
+	}
+
+	void draw_circle(float x, float y, float radius, sol::optional<sol::table> color_table = sol::nullopt) {
+		if (g_window == nullptr) return; // Ensure g_window is valid
+
+		sf::Color color = color_table ? lua_to_color(*color_table) : sf::Color::White;
+
+		sf::CircleShape circle(radius);
+		circle.setPosition(x, y);
+		circle.setFillColor(color);
+		g_window->draw(circle);
+	}
+
+	void draw(sf::Texture *texture, float x, float y,
+		sol::optional<float> rotation = sol::nullopt,
+		sol::optional<float> scale_x = sol::nullopt,
+		sol::optional<float> scale_y = sol::nullopt,
+		sol::optional<float> origin_x = sol::nullopt,
+		sol::optional<float> origin_y = sol::nullopt)
+	{
+		if (g_window == nullptr || texture == nullptr) return;
+
+		sf::Sprite sprite;
+		sprite.setTexture(*texture);
+		sprite.setPosition(x, y);
+
+		if (rotation) sprite.setRotation(*rotation);
+		if (scale_x && scale_y) sprite.setScale(*scale_x, *scale_y);
+		if (origin_x && origin_y) sprite.setOrigin(*origin_x, *origin_y);
+
+		g_window->draw(sprite);
+	}
+
+	void print(const std::string &text, float x, float y, unsigned int size = 30, const sol::table &color_table = sol::nil) {
+		if (g_window == nullptr) return; // Ensure g_window is valid
+
+		sf::Text sf_text(text, font, size);
+		sf_text.setPosition(x, y);
+		if (color_table.valid()) {
+			sf::Color color = lua_to_color(color_table);
+			sf_text.setFillColor(color);
+		}
+		else {
+			sf_text.setFillColor(sf::Color::White);
+		}
+
+		g_window->draw(sf_text);
+	}
+
+	void printf(const std::string &text, float x, float y, float wrapWidth = 0.0f, unsigned int size = 30, const sol::table &color_table = sol::nil) {
+		if (g_window == nullptr) return; // Ensure g_window is valid
+
+		sf::Text sf_text(text, font, size);
+		sf_text.setPosition(x, y);
+		if (color_table.valid()) {
+			sf::Color color = lua_to_color(color_table);
+			sf_text.setFillColor(color);
+		}
+		else {
+			sf_text.setFillColor(sf::Color::White);
+		}
+
+		if (wrapWidth > 0.0f) {
+			// For simplicity, we'll just use the full string without wrapping.
+			// SFML does not support text wrapping natively.
+		}
+
+		g_window->draw(sf_text);
+	}
+
+	void set_background_color(sol::table color_table) {
+		backgroundColor = lua_to_color(color_table);
+	}
+}
+
+
+// Binding without lambdas, assuming default values are handled in the function
+void bind_graphics_module(sol::state &lua) {
+	sol::table graphics = lua.create_table();
+	graphics.set_function("draw_rectangle", graphics::draw_rectangle);
+	graphics.set_function("draw_circle", graphics::draw_circle);
+	graphics.set_function("set_background_color", graphics::set_background_color);
+
+	// Expose the draw function
+	graphics.set_function("draw", graphics::draw);
+
+	// Expose newImage to load textures
+	// Capture the lua state in the lambda
+	graphics.set_function("newImage", [&lua](const std::string &file_path) -> sol::object {
+		auto texture = get_texture(file_path);
+		if (texture) {
+			// Return the texture as a userdata
+			return sol::make_object(lua, texture.get());
+		}
+		return sol::nil;
+	});
+
+
+	// Expose the print function
+	graphics.set_function("print", graphics::print);
+
+	// Expose the printf function
+	graphics.set_function("printf", graphics::printf);
+
+	lua["mo"]["graphics"] = graphics;
+}
+
+
+
+#pragma endregion
+
+
+#pragma region Window Module
+
+
+struct Window_Settings {
+	bool fullscreen = false;
+	bool resizable = false;
+	bool vsync = false;
+
+	int width = 800;
+	int height = 600;
+
+	std::string title = "SFML Window";
+
+	sf::ContextSettings sfmlSettings;
 };
 
+Window_Settings gWindowSettings;
 
-extern "C" int luaopen_graphics(lua_State * L)
+
+// Function to create the window initially
+void create_window(int width, int height) {
+
+	sf::Uint32 style = gWindowSettings.fullscreen ? sf::Style::Fullscreen : sf::Style::Close;
+	if (gWindowSettings.resizable) {
+		style |= sf::Style::Resize;
+	}
+
+	gWindowSettings.sfmlSettings.antialiasingLevel = 8; // Example for anti-aliasing
+
+	g_window = new sf::RenderWindow(sf::VideoMode(width, height), gWindowSettings.title.c_str(), style, gWindowSettings.sfmlSettings);
+	g_window->setVerticalSyncEnabled(gWindowSettings.vsync);
+}
+
+void set_title(const std::string &title)
 {
-	
-
-	luaL_newlib(L, graphicsLib);
-	
-	return 1;
+	gWindowSettings.title = title;
 }
 
-// Setup the metatables for SFML types
-void registerGraphicsMetatables(lua_State *L) {
-	luaL_newmetatable(L, "sfTexture");
-	lua_pop(L, 1);
+// Function to update window settings
+// Function to update window settings based on Lua table
+void set_window_mode(int width, int height, sol::table settings) {
+
+
+		bool fullscreen = settings.get_or("fullscreen", false);
+		bool resizable = settings.get_or("resizable", false);
+		bool vsync = settings.get_or("vsync", true);
+
+		gWindowSettings.fullscreen = fullscreen;
+		gWindowSettings.resizable = resizable;
+		gWindowSettings.vsync = vsync;
+		gWindowSettings.width = width;
+		gWindowSettings.height = height;
+
 }
 
-void callLuaFunction(lua_State *L, const char *tableName, const char *functionName, int numArgs, int numResults) {
-	// 1. Push the table onto the stack
-	lua_getglobal(L, tableName);  // Pushes `mytable` onto the stack
+void bind_window_module(sol::state &lua) {
+	sol::table window = lua.create_table();
 
-	// 2. Push the function onto the stack
-	lua_getfield(L, -1, functionName); // Pushes `mytable[functionName]` onto the stack
+	// Expose the set_window_mode function
+	  // Expose the set_window_mode function
+	window.set_function("setMode", [](int width, int height, sol::table settings) {
+		set_window_mode(width, height, settings);
+	});
 
-	// 3. Check if the function exists and is callable
-	if (!lua_isfunction(L, -1)) {
-		std::cerr << "Function '" << functionName << "' is not found in table '" << tableName << "'" << std::endl;
-		lua_pop(L, 2); // Pop function and table
-		return;
-	}
+	window.set_function("setTitle", set_title);
 
-	// 4. Push arguments onto the stack
-	// Note: This example assumes you have pushed arguments earlier
+	lua["mo"]["window"] = window;
+}
 
-	// 5. Call the function
-	if (lua_pcall(L, numArgs, numResults, 0) != LUA_OK) {
-		std::cerr << "Error: " << lua_tostring(L, -1) << std::endl;
-		lua_pop(L, 1); // Pop error message
-		return;
-	}
+#pragma endregion
+#include <sstream>
+#include <vector>
+#include <string>
+sf::Text createWrappedText(const sf::Font &font, const std::string &text, unsigned int characterSize, float width) {
+	// Create a text object to measure text size
+	sf::Text tempText(text, font, characterSize);
+	tempText.setCharacterSize(characterSize);
 
-	// 6. Retrieve the results
-	for (int i = 0; i < numResults; ++i) {
-		if (lua_isstring(L, -numResults + i)) {
-			std::cout << "Result " << i + 1 << ": " << lua_tostring(L, -numResults + i) << std::endl;
+	// Split the text into words and wrap it
+	std::stringstream ss(text);
+	std::string word;
+	std::string line;
+	std::vector<std::string> lines;
+
+	while (ss >> word) {
+		std::string testLine = line.empty() ? word : line + " " + word;
+		tempText.setString(testLine);
+
+		sf::FloatRect textRect = tempText.getLocalBounds();
+		// Use the width of the text to determine if it fits within the given width
+		if (textRect.width > width) {
+			// If it doesn't fit, save the current line and start a new one
+			lines.push_back(line);
+			line = word;
 		}
-		else if (lua_isnumber(L, -numResults + i)) {
-			std::cout << "Result " << i + 1 << ": " << lua_tonumber(L, -numResults + i) << std::endl;
+		else {
+			// Otherwise, continue adding words to the current line
+			line = testLine;
 		}
 	}
 
-	// 7. Clean up the stack
-	lua_pop(L, numResults + 1); // Pop results and the function
-}
-
-int main(int argc, char **argv) {
-
-	g_window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML Window");
-
-	// Initialize Lua
-	lua_State *L = luaL_newstate();
-	luaL_openlibs(L); // Load standard libraries
-
-	luaL_requiref(L, "graphics", luaopen_graphics, 1);
-	lua_pop(L, 1); // Remove the module from the stack
-
-	// Initialize the 'mo' table
-	// Create a new table and set it as the global `mo` table
-	lua_newtable(L);                    // Create a new table and push it onto the stack
-
-	// Custom Libraries
-	lua_getglobal(L, "graphics"); // Load the graphics library
-	lua_setfield(L, -2, "graphics"); // Set it as the field of the `mo` table
-	
-	lua_setglobal(L, "mo");            // Set the table as a global variable 
-
-	// Register SFML metatables
-	registerGraphicsMetatables(L);
-
-	// Load and execute the Lua script
-	std::string scriptPath = "script.lua";
-	if (luaL_dofile(L, scriptPath.c_str()) != LUA_OK) {
-		std::cerr << "Error loading script.lua: " << lua_tostring(L, -1) << std::endl;
-		lua_close(L);
-		return 1;
+	// Add the last line
+	if (!line.empty()) {
+		lines.push_back(line);
 	}
 
-	// SFML Setup
+	// Create a final text object to hold the wrapped text
+	sf::Text wrappedText;
+	wrappedText.setFont(font);
+	wrappedText.setCharacterSize(characterSize);
+	wrappedText.setString("");
+
+	std::string wrappedTextStr;
+	for (const std::string &l : lines) {
+		wrappedTextStr += l + "\n";
+	}
+
+	wrappedText.setString(wrappedTextStr);
+	return wrappedText;
+}
+
+
+#pragma region Keyboard
+
+std::unordered_map<std::string, sf::Keyboard::Key> keyMap = {
+	{"A", sf::Keyboard::A},
+	{"B", sf::Keyboard::B},
+	{"C", sf::Keyboard::C},
+	{"D", sf::Keyboard::D},
+	// Add other keys as needed
+	{"Enter", sf::Keyboard::Enter},
+	{"Space", sf::Keyboard::Space},
+	{"Escape", sf::Keyboard::Escape},
+	{"escape", sf::Keyboard::Escape}
+	// You can add all keys from sf::Keyboard::Key
+};
+
+void handleKeyPressed(const sf::Event &event, sol::state &lua) {
+	auto it = std::find_if(keyMap.begin(), keyMap.end(),
+		[&](const auto &pair) { return pair.second == event.key.code; });
+
+	if (it != keyMap.end()) {
+		lua["mo"]["keypressed"](it->first);
+	}
+}
+
+#pragma endregion
+
+
+#pragma region Events
+
+void event_quit() {
+	if (!g_window) return;
+	g_window->close();
+}
+
+void bind_event_module(sol::state &lua) {
+	sol::table event = lua.create_table();
+
+	// Expose the set_window_mode function
+	  // Expose the set_window_mode function
+	event.set_function("quit", &event_quit);
+
+	lua["mo"]["event"] = event;
+}
+
+
+#pragma endregion
+
+
+
+
+
+
+int main() {
+	
+	
+
+
+
+	//g_window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML with Lua");
+
 	sf::Clock clock;
 
-	
-	// Call `mo.load`
+	// Load the font
+	if (!load_font("./data/arial.ttf")) {
+		std::cerr << "Failed to load font." << std::endl;
+		return -1;
+	}
 
-	callLuaFunction(L, "mo", "load", 0, 0);
+	sf::Text text("Hello Pong!", font, 30);
+
+	// For left alignment
+	//text.setOrigin(0, text.getLocalBounds().height / 2);
+	//text.setPosition(100, 300);
+
+	// For center alignment
+	text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
+	text.setPosition(1280/2.0, 720/2.0 - 6);
+
+	//// For right alignment
+	//text.setOrigin(text.getLocalBounds().width, text.getLocalBounds().height / 2);
+	//text.setPosition(100, 300);
+
+	//std::string text = "This is an example of text wrapping in SFML. The text will be split into lines based on the given width.";
+	//float wrapWidth = 700.0f;
+	//sf::Text wrappedText = createWrappedText(font, text, 30, wrapWidth);
+	//wrappedText.setPosition(50, 50);
+
+	sol::state lua;
+	lua.open_libraries(sol::lib::base);
+
+
+	// Create the global `mo` table
+	lua["mo"] = lua.create_table();
+
+	//lua["mo"]["keypressed"] = [](const std::string &key) {
+	//	// This function can be used in Lua to handle key presses
+	//	};
+
+	
+	// Bind graphics functions to Lua state
+	bind_graphics_module(lua);
+	// Bind window functions to Lua state
+	bind_window_module(lua);
+	bind_event_module(lua);
+	bind_audio_module(lua);
+
+
+
+	
+	// Load and execute Lua script from file
+	//sol::protected_function_result result = lua.script_file("script.lua");
+
+	//if (!result.valid()) {
+	//	sol::error err = result;
+	//	std::cerr << "Lua error: " << err.what() << std::endl;
+	//	return -1;
+	//}
+
+	// Load and run your Lua script
+	try {
+		lua.script_file("script.lua");
+	}
+	catch (const sol::error &e) {
+		std::cerr << "Lua script error: " << e.what() << std::endl;
+	}
+	catch (...) {
+		std::cerr << "Unknown error occurred during Lua script execution" << std::endl;
+	}
+
+	
+
+	// Call Lua functions defined in the script
+	sol::function load_function = lua["mo"]["load"];
+	if (load_function.valid()) {
+		load_function();  // Call the Lua-defined function
+	}
+	else {
+		std::cerr << "Error: 'mo.load' is not defined in Lua" << std::endl;
+	}
+
+	create_window(gWindowSettings.width, gWindowSettings.height);
 
 
 	// Main loop
@@ -217,57 +474,39 @@ int main(int argc, char **argv) {
 		// Event handling
 		sf::Event event;
 		while (g_window->pollEvent(event)) {
+			if (event.type == sf::Event::KeyPressed) {
+				handleKeyPressed(event, lua);
+			}
 			if (event.type == sf::Event::Closed) {
 				g_window->close();
 			}
 		}
 
 		// Call `mo.update` with deltaTime
-		lua_getglobal(L, "mo");  
-
-		// 2. Push the function onto the stack
-		lua_getfield(L, -1, "update"); 
-
-		// 3. Check if the function exists and is callable
-		if (!lua_isfunction(L, -1)) {
-			std::cerr << "mo.update does not exist\n";
-			lua_pop(L, 2); // Pop function and table
-			return -1;
+		sol::function update_function = lua["mo"]["update"];
+		if (update_function.valid()) {
+			update_function(deltaTime);
 		}
-
-		lua_pushnumber(L, deltaTime);
-
-		// 5. Call the function
-		if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-			std::cerr << "Error: " << lua_tostring(L, -1) << std::endl;
-			lua_pop(L, 1); // Pop error message
-			return -1;
+		else {
+			std::cerr << "Error: 'mo.update' is not defined in Lua" << std::endl;
 		}
-
-		// 7. Clean up the stack
-		lua_pop(L, 1); // Pop results and the function
-
-
-
 		
-
 		// Clear the window
-		g_window->clear();
+		g_window->clear(backgroundColor);
 
-		callLuaFunction(L, "mo", "draw", 0, 0);
+		// Call 'mo.draw'
+		sol::function draw_function = lua["mo"]["draw"];
+		if (draw_function.valid()) {
+			//draw_function();
+		}
+		else {
+			std::cerr << "Error: 'mo.draw' is not defined in Lua" << std::endl;
+		}
 
+		g_window->draw(text);
 
-
-		
-	
-
-		
 		// Display the contents
 		g_window->display();
 	}
-
-	// Clean up Lua
-	lua_close(L);
-
 	return 0;
 }

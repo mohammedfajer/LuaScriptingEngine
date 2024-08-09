@@ -1,283 +1,273 @@
-//#include <SDL.h>
-//#include <stdio.h>
-//#include <SDL_image.h>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <iostream>
+extern "C"
+{
+#include <lua.hpp>
+}
+
+
+#include <vector>
+
+sf::RenderWindow *g_window = nullptr;
+
+
+int lua_drawAnything(lua_State *L) {
+	if (g_window == nullptr) {
+		return luaL_error(L, "RenderWindow is not initialized!");
+	}
+
+	sf::CircleShape shape(50);
+	shape.setFillColor(sf::Color::Green);
+	g_window->draw(shape);
+	return 0; // Number of return values to Lua
+}
+
+// Create a new image from a file and return a reference to it
+static int lua_newImage(lua_State *L) {
+	const char *filename = luaL_checkstring(L, 1);
+	sf::Texture *texture = new sf::Texture();
+	if (!texture->loadFromFile(filename)) {
+		delete texture;
+		return luaL_error(L, "Failed to load image: %s", filename);
+	}
+	// Store texture in userdata
+	sf::Texture **userdata = static_cast<sf::Texture **>(lua_newuserdata(L, sizeof(sf::Texture *)));
+	*userdata = texture;
+	luaL_getmetatable(L, "sfTexture");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+
+// Draw an image onto the global SFML window
+//static int lua_draw(lua_State *L) {
+//	sf::Texture *texture = *static_cast<sf::Texture **>(luaL_checkudata(L, 1, "sfTexture"));
+//	sf::Sprite sprite(*texture);
+//	sprite.setPosition(static_cast<float>(luaL_checknumber(L, 2)), static_cast<float>(luaL_checknumber(L, 3)));
 //
-//
-//extern "C"
-//{
-//#include <lua.h>
-//#include <lualib.h>
-//#include <lauxlib.h>
-//}
-//#include <iostream>
-//
-//#include <chrono>
-//#include <string>
-//#include <windows.h>
-//
-//#include "keyboard.h"
-//#include "graphics.h"
-//#include "timer.h"
-//
-//
-//SDL_Window *gWindow = nullptr;
-//SDL_Renderer *gRenderer = nullptr;
-//
-//
-//
-//std::chrono::system_clock::time_point getFileModificationTime(const std::string &filePath) {
-//	struct stat fileInfo;
-//	if (stat(filePath.c_str(), &fileInfo) == 0) {
-//		std::chrono::system_clock::time_point tp = std::chrono::system_clock::from_time_t(fileInfo.st_mtime);
-//		return tp;
-//	}
-//	else {
-//		std::cerr << "Error: Unable to get file status for " << filePath << std::endl;
-//		return std::chrono::system_clock::now(); // Return current time in case of error
-//	}
-//}
-//
-//
-//
-//extern "C"
-//{
-//	//
-//	void reloadLuaScript(lua_State *&L, const std::string &scriptPath, std::chrono::system_clock::time_point &lastModifiedTime) {
-//
-//		std::chrono::system_clock::time_point currentModifiedTime = getFileModificationTime(scriptPath);
-//
-//		if (currentModifiedTime > lastModifiedTime) {
-//			std::cout << "Reloading Lua script..." << std::endl;
-//
-//			lua_close(L);
-//			L = luaL_newstate();
-//			luaL_openlibs(L);
-//			luaL_requiref(L, "graphics", luaopen_graphics, 1);
-//			lua_pop(L, 1);
-//
-//			// TODO(mo): other libs such as keyboard, etc..
-//
-//			if (luaL_dofile(L, scriptPath.c_str()) != LUA_OK) {
-//				std::cerr << "Error reloading script: " << lua_tostring(L, -1) << std::endl;
-//			}
-//
-//			lastModifiedTime = currentModifiedTime;
-//
-//			// Update load
-//				// Ensure `mo` table and functions exist
-//			lua_getglobal(L, "mo");
-//			if (!lua_istable(L, -1)) {
-//				std::cerr << "Error: `mo` is not a table." << std::endl;
-//				lua_close(L);
-//				SDL_DestroyRenderer(gRenderer);
-//				SDL_DestroyWindow(gWindow);
-//				SDL_Quit();
-//				return ;
-//			}
-//			lua_pop(L, 1);
-//
-//			lua_getglobal(L, "mo");
-//			lua_getfield(L, -1, "load");
-//			if (lua_isfunction(L, -1)) {
-//				lua_pcall(L, 0, 0, 0);
-//			}
-//			else {
-//				std::cerr << "Error: `mo.load` function is not defined." << std::endl;
-//			}
-//			lua_pop(L, 1);
-//		}
-//	}
-//}
-//
-//
-//int main(int argc, char *argv[])
-//{
-//
-//#pragma region SDL2 and SDL2 Image Setup (Window and Renderer)
-//
-//	SDL_Init(SDL_INIT_VIDEO);
-//
-//	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-//		std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError() << std::endl;
-//		SDL_Quit();
-//		return -1;
-//	}
-//
-//	gWindow = SDL_CreateWindow("Simple SDL2 Window",
-//		SDL_WINDOWPOS_UNDEFINED,
-//		SDL_WINDOWPOS_UNDEFINED,
-//		800, // width
-//		600, // height
-//		SDL_WINDOW_SHOWN);
-//
-//	if (gWindow == NULL) {
-//		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-//		return 1;
-//	}
-//
-//	// Create a renderer
-//	gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
-//	if (gRenderer == NULL) {
-//		printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-//		SDL_DestroyWindow(gWindow);
-//		SDL_Quit();
-//		return 1;
-//	}
-//#pragma endregion
-//
-//
-//	// Lua State and Stack
-//	lua_State *L = luaL_newstate();
-//	luaL_openlibs(L); // Standard Libraries
-//
-//	// Load the custom graphics library
-//	luaL_requiref(L, "graphics", luaopen_graphics, 1);
-//	lua_pop(L, 1); // Remove the module from the stack
-//
-//	// Load the custom keyboard library
-//	luaL_requiref(L, "keyboard", luaopen_keyboard, 1);
-//	lua_pop(L, 1); // Remove the module from the stack
-//
-//	// Load the custom timer library
-//	luaL_requiref(L, "timer", luaopen_timer, 1);
-//	lua_pop(L, 1);
-//
-//
-//	// Create the "mo" table implicitly
-//	lua_newtable(L); // create a new table
-//
-//	// Add the custom libraries as sub-tables implicitly
-//	
-//	// Load and set the graphics library
-//	lua_getglobal(L, "graphics"); // Load the graphics library
-//	lua_setfield(L, -2, "graphics"); // Set it as the field of the `mo` table
-//
-//	// Load and set the keyboard library
-//	lua_getglobal(L, "keyboard"); // Load the keyboard library
-//	lua_setfield(L, -2, "keyboard"); // Set it as the field of the `mo` table
-//
-//	// Load and set the timer library
-//	lua_getglobal(L, "timer"); // Load the timer library
-//	lua_setfield(L, -2, "timer"); // Set it as the field of the `mo` table
-//
-//
-//	lua_setglobal(L, "mo"); // Push the table onto the stack
-//
-//
-//	std::string scriptPath = "script.lua";
-//	std::chrono::system_clock::time_point lastModifiedTime = getFileModificationTime(scriptPath);
-//
-//	// Entry Point to the scripts
-//	if (luaL_dofile(L, "script.lua") != LUA_OK) {
-//		std::cerr << "Error loading script.lua: " << lua_tostring(L, -1) << std::endl;
-//		lua_close(L);
-//		SDL_DestroyRenderer(gRenderer);
-//		SDL_DestroyWindow(gWindow);
-//		SDL_Quit();
-//		return 1;
-//	}
-//
-//	// Ensure `mo` table and functions exist
-//	lua_getglobal(L, "mo");
-//	if (!lua_istable(L, -1)) {
-//		std::cerr << "Error: `mo` is not a table." << std::endl;
-//		lua_close(L);
-//		SDL_DestroyRenderer(gRenderer);
-//		SDL_DestroyWindow(gWindow);
-//		SDL_Quit();
-//		return 1;
-//	}
-//	lua_pop(L, 1);
-//
-//	// Call mo.load
-//	lua_getglobal(L, "mo");
-//	lua_getfield(L, -1, "load");
-//	if (lua_isfunction(L, -1)) {
-//		lua_pcall(L, 0, 0, 0);
-//	}
-//	else {
-//		std::cerr << "Error: `mo.load` function is not defined." << std::endl;
-//	}
-//	lua_pop(L, 1);
-//	// end!
-//
-//
-//	// Main loop flag
-//	int quit = 0;
-//
-//	// Event handler
-//	SDL_Event e;
-//
-//	// While the application is running
-//	while (!quit) {
-//		
-//		update_timer_module();
-//
-//		// Handle events on the queue
-//		while (SDL_PollEvent(&e) != 0) {
-//			// User requests quit
-//			if (e.type == SDL_QUIT) {
-//				quit = 1;
-//			}
-//		}
-//
-//		reloadLuaScript(L, scriptPath, lastModifiedTime);
-//
-//		// Call mo.update(dt)
-//		lua_getglobal(L, "mo");
-//		lua_getfield(L, -1, "update");
-//		if (lua_isfunction(L, -1)) {
-//			lua_pushnumber(L, gTimeInfo.deltaTime);
-//			if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-//				std::cerr << "Error calling mo.update: " << lua_tostring(L, -1) << std::endl;
-//				lua_pop(L, 1);
-//			}
-//		}
-//		else {
-//			std::cerr << "Error: `mo.update` function is not defined." << std::endl;
-//		}
-//		lua_pop(L, 1);
-//		// end!
-//
-//
-//		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255); // Set color to black
-//		SDL_RenderClear(gRenderer);
-//
-//		// Call mo.draw
-//		lua_getglobal(L, "mo");
-//		lua_getfield(L, -1, "draw");
-//		if (lua_isfunction(L, -1)) {
-//			if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-//				std::cerr << "Error calling mo.draw: " << lua_tostring(L, -1) << std::endl;
-//				lua_pop(L, 1);
-//			}
-//		}
-//		else {
-//			std::cerr << "Error: `mo.draw` function is not defined." << std::endl;
-//		}
-//		lua_pop(L, 1);
-//		// end!
-//
-//
-//		// Update screen
-//		SDL_RenderPresent(gRenderer);
-//
-//		
-//	}
-//
-//#pragma region Cleanup
-//	lua_close(L);
-//
-//	// Destroy renderer and window
-//	SDL_DestroyRenderer(gRenderer);
-//	SDL_DestroyWindow(gWindow);
-//
-//	// Quit SDL subsystems
-//	SDL_Quit();
-//#pragma endregion
-//
-//
+//	g_window->draw(sprite);
 //	return 0;
 //}
-//
-//
+
+// Draw an image onto the global SFML window
+static int lua_draw(lua_State *L) {
+	// Check the type of the first argument and ensure it's userdata for sf::Texture
+	sf::Texture *texture = *static_cast<sf::Texture **>(luaL_checkudata(L, 1, "sfTexture"));
+
+	// Create a sprite from the texture
+	sf::Sprite sprite(*texture);
+
+	// Get position from the second and third arguments
+	float x = static_cast<float>(luaL_checknumber(L, 2));
+	float y = static_cast<float>(luaL_checknumber(L, 3));
+
+	// Check if a fourth argument is provided (rotation angle)
+	float rotation = 0.0f; // Default value
+	if (lua_gettop(L) >= 4) {
+		rotation = static_cast<float>(luaL_checknumber(L, 4));
+	}
+
+	float desiredWidth = texture->getSize().x;
+	float desiredHeight = texture->getSize().y;
+
+	if (lua_gettop(L) >= 6)
+	{
+		desiredWidth = static_cast<float>(luaL_checknumber(L, 5));
+		desiredHeight = static_cast<float>(luaL_checknumber(L, 6));
+	}
+
+	// Get the original size of the texture
+	sf::Vector2u textureSize = texture->getSize();
+
+	// Calculate the scale factors
+	float scaleX = desiredWidth / textureSize.x;
+	float scaleY = desiredHeight / textureSize.y;
+
+	// Set the sprite scale
+	sprite.setScale(scaleX, scaleY);
+
+	bool centerIt = false;
+	if (lua_gettop(L) >= 7)
+	{
+		centerIt = static_cast<bool>( lua_toboolean(L, 7) );
+	}
+
+	if (centerIt)
+	{
+		// Set the origin to the center of the sprite
+		sprite.setOrigin(desiredWidth / 2.0f, desiredHeight / 2.0f);
+	}
+
+	// Set sprite properties
+	sprite.setPosition(x, y);
+	sprite.setRotation(rotation);
+
+	// Draw the sprite onto the global SFML window
+	g_window->draw(sprite);
+	return 0;
+}
+
+static const luaL_Reg graphicsLib[] = {
+		{"drawSomething", lua_drawAnything },
+		{"newImage", lua_newImage},
+		{"draw", lua_draw},
+		{NULL, NULL}
+};
+
+
+extern "C" int luaopen_graphics(lua_State * L)
+{
+	
+
+	luaL_newlib(L, graphicsLib);
+	
+	return 1;
+}
+
+// Setup the metatables for SFML types
+void registerGraphicsMetatables(lua_State *L) {
+	luaL_newmetatable(L, "sfTexture");
+	lua_pop(L, 1);
+}
+
+void callLuaFunction(lua_State *L, const char *tableName, const char *functionName, int numArgs, int numResults) {
+	// 1. Push the table onto the stack
+	lua_getglobal(L, tableName);  // Pushes `mytable` onto the stack
+
+	// 2. Push the function onto the stack
+	lua_getfield(L, -1, functionName); // Pushes `mytable[functionName]` onto the stack
+
+	// 3. Check if the function exists and is callable
+	if (!lua_isfunction(L, -1)) {
+		std::cerr << "Function '" << functionName << "' is not found in table '" << tableName << "'" << std::endl;
+		lua_pop(L, 2); // Pop function and table
+		return;
+	}
+
+	// 4. Push arguments onto the stack
+	// Note: This example assumes you have pushed arguments earlier
+
+	// 5. Call the function
+	if (lua_pcall(L, numArgs, numResults, 0) != LUA_OK) {
+		std::cerr << "Error: " << lua_tostring(L, -1) << std::endl;
+		lua_pop(L, 1); // Pop error message
+		return;
+	}
+
+	// 6. Retrieve the results
+	for (int i = 0; i < numResults; ++i) {
+		if (lua_isstring(L, -numResults + i)) {
+			std::cout << "Result " << i + 1 << ": " << lua_tostring(L, -numResults + i) << std::endl;
+		}
+		else if (lua_isnumber(L, -numResults + i)) {
+			std::cout << "Result " << i + 1 << ": " << lua_tonumber(L, -numResults + i) << std::endl;
+		}
+	}
+
+	// 7. Clean up the stack
+	lua_pop(L, numResults + 1); // Pop results and the function
+}
+
+int main(int argc, char **argv) {
+
+	g_window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML Window");
+
+	// Initialize Lua
+	lua_State *L = luaL_newstate();
+	luaL_openlibs(L); // Load standard libraries
+
+	luaL_requiref(L, "graphics", luaopen_graphics, 1);
+	lua_pop(L, 1); // Remove the module from the stack
+
+	// Initialize the 'mo' table
+	// Create a new table and set it as the global `mo` table
+	lua_newtable(L);                    // Create a new table and push it onto the stack
+
+	// Custom Libraries
+	lua_getglobal(L, "graphics"); // Load the graphics library
+	lua_setfield(L, -2, "graphics"); // Set it as the field of the `mo` table
+	
+	lua_setglobal(L, "mo");            // Set the table as a global variable 
+
+	// Register SFML metatables
+	registerGraphicsMetatables(L);
+
+	// Load and execute the Lua script
+	std::string scriptPath = "script.lua";
+	if (luaL_dofile(L, scriptPath.c_str()) != LUA_OK) {
+		std::cerr << "Error loading script.lua: " << lua_tostring(L, -1) << std::endl;
+		lua_close(L);
+		return 1;
+	}
+
+	// SFML Setup
+	sf::Clock clock;
+
+	
+	// Call `mo.load`
+
+	callLuaFunction(L, "mo", "load", 0, 0);
+
+
+	// Main loop
+	while (g_window->isOpen()) {
+		sf::Time dt = clock.restart();
+		float deltaTime = dt.asSeconds();
+
+		// Event handling
+		sf::Event event;
+		while (g_window->pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
+				g_window->close();
+			}
+		}
+
+		// Call `mo.update` with deltaTime
+		lua_getglobal(L, "mo");  
+
+		// 2. Push the function onto the stack
+		lua_getfield(L, -1, "update"); 
+
+		// 3. Check if the function exists and is callable
+		if (!lua_isfunction(L, -1)) {
+			std::cerr << "mo.update does not exist\n";
+			lua_pop(L, 2); // Pop function and table
+			return -1;
+		}
+
+		lua_pushnumber(L, deltaTime);
+
+		// 5. Call the function
+		if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+			std::cerr << "Error: " << lua_tostring(L, -1) << std::endl;
+			lua_pop(L, 1); // Pop error message
+			return -1;
+		}
+
+		// 7. Clean up the stack
+		lua_pop(L, 1); // Pop results and the function
+
+
+
+		
+
+		// Clear the window
+		g_window->clear();
+
+		callLuaFunction(L, "mo", "draw", 0, 0);
+
+
+
+		
+	
+
+		
+		// Display the contents
+		g_window->display();
+	}
+
+	// Clean up Lua
+	lua_close(L);
+
+	return 0;
+}

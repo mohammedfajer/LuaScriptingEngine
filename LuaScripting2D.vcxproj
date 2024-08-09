@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -43,7 +43,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\thirdparty\LuaBridge\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
@@ -108,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\thirdparty\LuaBridge\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
@@ -135,11 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graphics.cpp" />
-    <ClCompile Include="keyboard.cpp" />
-    <ClCompile Include="luabridge_custom_lib.cpp" />
-    <ClCompile Include="luabridge_globals.cpp" />
-    <ClCompile Include="luabridge_tables.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sfml_audio.cpp" />
     <ClCompile Include="sfml_basic_shapes.cpp" />
@@ -154,30 +149,16 @@
     <ClCompile Include="sfml_virtual_resolution.cpp" />
     <ClCompile Include="sfml_window.cpp" />
     <ClCompile Include="sfml_working_with_text.cpp" />
-    <ClCompile Include="test_luabridge.cpp" />
-    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\grayscale.frag" />
     <None Include="data\grayscale.vert" />
     <None Include="data\pulse.frag" />
     <None Include="data\pulse.vert" />
-    <None Include="player.lua" />
     <None Include="script.lua" />
-    <None Include="script_polygons.lua" />
-    <None Include="script_stars.lua" />
-    <None Include="test_custom_library.lua" />
-    <None Include="test_functions.lua" />
-    <None Include="test_globals.lua" />
-    <None Include="test_tables.lua" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="graphics.h" />
-    <ClInclude Include="keyboard.h" />
-    <ClInclude Include="timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

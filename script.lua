@@ -1,39 +1,25 @@
-
-
-
+-- This function is called when the script is loaded
 function mo.load()
-    -- Initialization code, if any
-    print("Lua mo.load Call")
+    print("From mo.load()")
+    
+    hamster = mo.graphics.newImage("./data/bunny.jpg")
 
-    texture = mo.graphics.newImage("./data/bunny.jpg")
-        -- Create a quad for the image
-     quadId = mo.graphics.newQuad(10, 10, 512, 512)  -- 1 is the imageId
+    angle = 0
 end
 
+-- This function is called every frame with the delta time
 function mo.update(dt)
-    -- Update logic (e.g., handle input or move objects)
-    print("Lua mo.update(dt): " .. dt)
+    print("From mo.update(dt)")
+    
+    
 end
 
-
-
+-- This function is called every frame to draw objects
 function mo.draw()
- 
-    mo.graphics.setBackgroundColor(0, 0,255, 255)
+    print("From mo.draw()")
     
-    -- Draw the texture at (50, 50)
+    mo.graphics.drawSomething()
+    mo.graphics.draw(hamster, 100, 100, angle, 50, 50, true)
 
-
-    -- mo.graphics.draw(texture, 0, 0)
-
-    
-   -- Draw the texture at (100, 100) with rotation and scaling
-   -- mo.graphics.draw(texture, 100, 100, 0, 1, 1)
-
-
-
-
-    -- Draw using the quad
-    mo.graphics.draw(texture, quadId, 200, 200)
-
+    angle = angle + 1
 end

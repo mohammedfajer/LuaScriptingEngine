@@ -25,6 +25,8 @@ end
 
 -- This function is called every frame to draw objects
 function mo.draw()
+   mo.graphics.rectangle(100, 100, 20, 20, {r=255, g=0, b=0})
+   mo.graphics.circle(100, 300, 20)
    
 end
 

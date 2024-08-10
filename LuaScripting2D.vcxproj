@@ -146,6 +146,7 @@
     <ClCompile Include="sfml_basic_shapes.cpp" />
     <ClCompile Include="sfml_basic_ui.cpp" />
     <ClCompile Include="sfml_box2d_basic.cpp" />
+    <ClCompile Include="sfml_cool_shader_effect.cpp" />
     <ClCompile Include="sfml_handling_input.cpp" />
     <ClCompile Include="sfml_joystick.cpp" />
     <ClCompile Include="sfml_particles.cpp" />

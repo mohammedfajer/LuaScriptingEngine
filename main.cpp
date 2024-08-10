@@ -2,8 +2,6 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 
-
-
 // NOTE(MO) it worked when I changed c++ version to 17.
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
@@ -15,11 +13,22 @@
 #include "core.h"
 
 
+// Struct to encapsulate font and its size
+struct FontData {
+	std::shared_ptr<sf::Font> font;
+	int size;
+
+	FontData() : font(nullptr), size(0) {}
+
+	FontData(std::shared_ptr<sf::Font> f, int s) : font(f), size(s) {}
+};
 
 struct GlobalContext {
 	sf::RenderWindow window;
 	sf::Color backgroundColor = sf::Color::Black;
-	sf::Font font;
+	FontData activeFont;
+
+	GlobalContext() : activeFont(nullptr, 0) {}
 };
 
 global_variable GlobalContext gContext;
@@ -28,8 +37,11 @@ global_variable GlobalContext gContext;
 
 // Load the font
 bool loadFont(const std::string &fontpath) {
-	auto &font = gContext.font;
-	return font.loadFromFile(fontpath);
+	// Ensure the font is initialized
+	if (gContext.activeFont.font) {
+		return gContext.activeFont.font->loadFromFile(fontpath);
+	}
+	return false;  // Return false if the font pointer is not initialized
 }
 
 
@@ -71,13 +83,69 @@ std::shared_ptr<sf::Texture> getTexture(const std::string &filepath) {
 // Dummy module namespace
 namespace graphics {
 
-
+	// NOTE(MO): not used yet!
 	enum class AlignMode {
 		center,
 		left,
 		right,
 		justify
 	};
+
+	
+	// Create and return a FontData object
+	FontData newFont(const std::string &fontpath, int size) {
+
+		std::cout << "newFont called from lua.\n";
+
+		auto font = std::make_shared<sf::Font>();
+		if (font->loadFromFile(fontpath)) {
+			return FontData(font, size);
+		}
+		return FontData(nullptr, 0);  // Return invalid FontData if loading fails
+	}
+
+
+	// Set the active font in the global context
+	
+	void setActiveFont(const FontData &fontData) {
+		std::cout << "setActiveFont called from lua.\n";
+
+		if (fontData.font) {
+			gContext.activeFont = fontData;  // Directly set FontData
+		}
+		else {
+			gContext.activeFont = FontData(nullptr, 0);  // Handle invalid FontData
+		}
+	}
+
+	// Draw text using the active font
+	
+	void drawText(const std::string &text, float x, float y) {
+		std::cout << "drawText called from lua.\n";
+
+		if (gContext.activeFont.font) {
+			sf::Text sfText;
+			sfText.setFont(*gContext.activeFont.font);
+			sfText.setString(text);
+			sfText.setCharacterSize(gContext.activeFont.size);
+			sfText.setPosition(x, y);
+			sfText.setFillColor(sf::Color::White);
+
+			if (gContext.window.isOpen()) {
+				gContext.window.draw(sfText);
+			}
+			else {
+				std::cerr << "Error: Render window is not open.\n";
+			}
+		}
+		else {
+			std::cerr << "Error: No valid font set.\n";
+		}
+	}
+
+
+
+
 
 	void drawRectangle(f32 x, f32 y, f32 width, f32 height, sol::optional<sol::table> colorTable = sol::nullopt) {
 		if (!gContext.window.isOpen()) return;
@@ -113,9 +181,10 @@ namespace graphics {
 		gContext.window.draw(sprite);
 	}
 
-	void print(const std::string &text, f32 x, f32 y, u32 size = 30, const sol::table &colorTable = sol::nil) {
+	void print(const std::string &text, f32 x, f32 y,
+		u32 size = 30, const sol::table &colorTable = sol::nil) {
 		if(!gContext.window.isOpen()) return;
-		auto &font = gContext.font;
+		auto &font = *gContext.activeFont.font;
 		sf::Text sfText(text, font, size);
 		sfText.setPosition(x, y);
 		if (colorTable.valid()) {
@@ -128,9 +197,10 @@ namespace graphics {
 		gContext.window.draw(sfText);
 	}
 
-	void printf(const std::string &text, f32 x, f32 y, f32 wrapWidth = 0.0f, u32 size = 30, const sol::table &colorTable = sol::nil) {
+	void printf(const std::string &text, f32 x, f32 y, f32 wrapWidth = 0.0f,
+		u32 size = 30, const sol::table &colorTable = sol::nil) {
 		if (!gContext.window.isOpen()) return;
-		auto &font = gContext.font;
+		auto &font = *gContext.activeFont.font;
 		sf::Text sfText(text, font, size);
 		sfText.setPosition(x, y);
 		if (colorTable.valid()) {
@@ -158,7 +228,6 @@ namespace graphics {
 
 // Binding without lambdas, assuming default values are handled in the function
 void bindGraphicsModule(sol::state &lua) {
-
 	sol::table graphics = lua.create_table();
 	graphics.set_function("rectangle", graphics::drawRectangle);
 	graphics.set_function("circle", graphics::drawCircle);
@@ -178,23 +247,34 @@ void bindGraphicsModule(sol::state &lua) {
 		return sol::nil;
 	});
 
-
 	// Expose the print function
 	graphics.set_function("print", graphics::print);
 
 	// Expose the printf function
 	graphics.set_function("printf", graphics::printf);
 
+	// FONTS HERE!
+	// Expose FontData to Lua
+	//lua.new_usertype<FontData>("FontData",
+	//	sol::constructors<FontData(), FontData(std::shared_ptr<sf::Font>, int)>(),
+	//	"font", &FontData::font,
+	//	"size", &FontData::size
+	//);
+
+	//// Bind functions
+	//graphics.set_function("newFont", [](const std::string &fontpath, int size) -> std::shared_ptr<FontData> {
+	//	return std::make_shared<FontData>(graphics::newFont(fontpath, size));
+	//	});
+
+	//graphics.set_function("setFont", graphics::setActiveFont);
+	//graphics.set_function("drawText", graphics::drawText);
+
 	lua["mo"]["graphics"] = graphics;
 }
 
-
-
 #pragma endregion
 
-
 #pragma region Window Module
-
 
 struct WindowSettings {
 	bool fullscreen = false;
@@ -225,12 +305,8 @@ void createWindow(i32 width, i32 height) {
 	gContext.window.setVerticalSyncEnabled(gWindowSettings.vsync);
 }
 
-void setTitle(const std::string &title)
-{
-	gWindowSettings.title = title;
-}
+inline void setTitle(const std::string &title) { gWindowSettings.title = title; }
 
-// Function to update window settings
 // Function to update window settings based on Lua table
 void setWindowMode(int width, int height, sol::table settings) {
 	bool fullscreen = settings.get_or("fullscreen", false);
@@ -258,6 +334,7 @@ void bindWindowModule(sol::state &lua) {
 #include <sstream>
 #include <vector>
 #include <string>
+
 sf::Text createWrappedText(const sf::Font &font, const std::string &text, u32 characterSize, f32 width) {
 	// Create a text object to measure text size
 	sf::Text tempText(text, font, characterSize);
@@ -352,13 +429,16 @@ void bindEventModule(sol::state &lua) {
 int main() {
 	sf::Clock clock;
 
+	// Initialize the font in the global context
+	gContext.activeFont.font = std::make_shared<sf::Font>();
+
 	// Load the font
 	if (!loadFont("./data/arial.ttf")) {
 		std::cerr << "Failed to load font." << std::endl;
 		return -1;
 	}
 
-	auto &font = gContext.font;
+	auto &font = *gContext.activeFont.font;
 
 	sf::Text text("Hello Pong!", font, 30);
 
@@ -393,7 +473,6 @@ int main() {
 
 	bind_audio_module(lua);
 
-	
 	//Load and execute Lua script from file
 	sol::protected_function_result result = lua.script_file("script.lua");
 
@@ -402,7 +481,6 @@ int main() {
 		std::cerr << "Lua error: " << err.what() << std::endl;
 		return -1;
 	}
-
 
 	// Call Lua functions defined in the script
 	sol::function load_function = lua["mo"]["load"];

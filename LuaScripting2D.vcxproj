@@ -154,6 +154,7 @@
     <ClCompile Include="sfml_textures.cpp" />
     <ClCompile Include="sfml_timing.cpp" />
     <ClCompile Include="sfml_virtual_resolution.cpp" />
+    <ClCompile Include="sfml_virtual_resolution_views.cpp" />
     <ClCompile Include="sfml_window.cpp" />
     <ClCompile Include="sfml_working_with_text.cpp" />
     <ClCompile Include="timer.cpp" />
@@ -164,6 +165,7 @@
     <None Include="data\grayscale.vert" />
     <None Include="data\pulse.frag" />
     <None Include="data\pulse.vert" />
+    <None Include="player.lua" />
     <None Include="script.lua" />
   </ItemGroup>
   <ItemGroup>

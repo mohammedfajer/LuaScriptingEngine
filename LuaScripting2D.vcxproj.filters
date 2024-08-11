@@ -105,6 +105,9 @@
     <ClCompile Include="sfml_cool_shader_effect.cpp">
       <Filter>Source Files\SFML Core Experiments</Filter>
     </ClCompile>
+    <ClCompile Include="sfml_virtual_resolution_views.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\grayscale.frag">
@@ -120,6 +123,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="script.lua">
+      <Filter>Source Files\Scripts Docs\Pong Game</Filter>
+    </None>
+    <None Include="player.lua">
       <Filter>Source Files\Scripts Docs\Pong Game</Filter>
     </None>
   </ItemGroup>

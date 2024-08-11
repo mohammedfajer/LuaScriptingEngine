@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
-
-int CustomVirtualResoltuionMain() {
+// CustomVirtualResolutionMainViews
+int CustomVirtualResolutionMainViews() {
 	// Actual window size
 	sf::RenderWindow window(sf::VideoMode(700, 700), "Virtual Resolution Example");
 
@@ -8,24 +8,22 @@ int CustomVirtualResoltuionMain() {
 	const unsigned int virtualWidth = 10;
 	const unsigned int virtualHeight = 10;
 
-	// Create a render texture with the virtual resolution
-	sf::RenderTexture renderTexture;
-	if (!renderTexture.create(virtualWidth, virtualHeight)) {
-		return -1; // Error creating render texture
-	}
-
-	// Create a sprite to display the render texture
-	sf::Sprite sprite(renderTexture.getTexture());
+	// Create and set up the view for the virtual resolution
+	sf::View view;
+	float windowWidth = static_cast<float>(window.getSize().x);
+	float windowHeight = static_cast<float>(window.getSize().y);
 
 	// Calculate scaling factors
-	float scaleX = static_cast<float>(window.getSize().x) / virtualWidth;
-	float scaleY = static_cast<float>(window.getSize().y) / virtualHeight;
+	float scaleX = windowWidth / virtualWidth;
+	float scaleY = windowHeight / virtualHeight;
+	float scale = std::min(scaleX, scaleY);
 
-	// Set the scale of the sprite
-	sprite.setScale(scaleX, scaleY);
+	// Set the view size and center based on the virtual resolution
+	view.setSize(virtualWidth * scale, virtualHeight * scale);
+	view.setCenter(virtualWidth / 2.0f, virtualHeight / 2.0f);
+	window.setView(view);
 
-	
-
+	// Create a rectangle shape
 	sf::RectangleShape rect(sf::Vector2f(1.5, 1.5)); // Small rectangle
 	rect.setFillColor(sf::Color::Red);
 
@@ -36,10 +34,7 @@ int CustomVirtualResoltuionMain() {
 
 	// Position shapes relative to virtual resolution
 	sf::Vector2f pos(0.0, 0.0); // Center of the virtual resolution
-
 	rect.setPosition(pos);
-
-	
 
 	// Main loop
 	while (window.isOpen()) {
@@ -50,22 +45,11 @@ int CustomVirtualResoltuionMain() {
 			}
 		}
 
-		// Clear the render texture and draw shapes at the virtual resolution
-		renderTexture.clear(sf::Color::Black);
-
-		// Draw shapes to render texture
-		renderTexture.draw(rect);
-		
-		
-
-		// Display the content of render texture
-		renderTexture.display();
-
 		// Clear the window
-		window.clear();
+		window.clear(sf::Color::Black);
 
-		// Draw the render texture's sprite (scaled to fit the window)
-		window.draw(sprite);
+		// Draw the rectangle to the window
+		window.draw(rect);
 
 		// Display the content of the window
 		window.display();

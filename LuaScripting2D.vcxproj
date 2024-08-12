@@ -76,14 +76,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\thirdparty\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\lib\x64;D:\DESKTOP\GLToys\thirdparty\lua524;D:\DESKTOP\GLToys\thirdparty\SDL2_image\lib\x64;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,14 +108,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\include;D:\DESKTOP\GLToys\thirdparty\lua524\include;D:\DESKTOP\GLToys\thirdparty\SDL2_image\include;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\thirdparty\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\DESKTOP\GLToys\thirdparty\SDL2\lib\x64;D:\DESKTOP\GLToys\thirdparty\lua524;D:\DESKTOP\GLToys\thirdparty\SDL2_image\lib\x64;D:\DESKTOP\GLToys\thirdparty\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;D:\DESKTOP\GLToys\thirdparty\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,12 +146,23 @@
     <ClCompile Include="sfml_basic_shapes.cpp" />
     <ClCompile Include="sfml_basic_ui.cpp" />
     <ClCompile Include="sfml_box2d_basic.cpp" />
+    <ClCompile Include="sfml_camera_and_screenshake_tilemap.cpp" />
     <ClCompile Include="sfml_cool_shader_effect.cpp" />
     <ClCompile Include="sfml_handling_input.cpp" />
     <ClCompile Include="sfml_joystick.cpp" />
+    <ClCompile Include="sfml_object_hierarchies_scene_graph.cpp" />
     <ClCompile Include="sfml_particles.cpp" />
+    <ClCompile Include="sfml_push_pop_transformations.cpp" />
+    <ClCompile Include="sfml_raycasting.cpp" />
+    <ClCompile Include="sfml_resolutionIndependent_letterboxing.cpp" />
     <ClCompile Include="sfml_shaders.cpp" />
+    <ClCompile Include="sfml_shapes.cpp" />
+    <ClCompile Include="sfml_spritesheet_animation.cpp" />
     <ClCompile Include="sfml_textures.cpp" />
+    <ClCompile Include="sfml_texture_filtering.cpp" />
+    <ClCompile Include="sfml_text_alignment.cpp" />
+    <ClCompile Include="sfml_tilemap_tiled.cpp" />
+    <ClCompile Include="sfml_timers_and_timelines.cpp" />
     <ClCompile Include="sfml_timing.cpp" />
     <ClCompile Include="sfml_virtual_resolution.cpp" />
     <ClCompile Include="sfml_virtual_resolution_views.cpp" />
@@ -180,6 +191,13 @@
     <ClInclude Include="physics.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="data\music.mp3" />
+    <Media Include="data\soundEffect.mp3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

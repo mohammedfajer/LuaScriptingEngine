@@ -1,6 +1,7 @@
 
 #pragma region Includes
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
 // NOTE(MO) it worked when I changed c++ version to 17.
@@ -90,6 +91,8 @@ namespace graphics {
 		justify
 	};
 
+	
+
 	Font *newFont(const std::string &filepath, unsigned int fontSize) {
 		std::cout << "Creating font with size, PATH = " << filepath << ", SIZE = " << fontSize << std::endl;
 		Font *fontData = new Font(fontSize);
@@ -150,7 +153,7 @@ namespace graphics {
 		rectangle.setPosition(x, y);
 
 		rectangle.setFillColor(color);
-		std::cout << "Drawing rectangle at (" << x << ", " << y << ") with size (" << width << ", " << height << ")\n";
+		//std::cout << "Drawing rectangle at (" << x << ", " << y << ") with size (" << width << ", " << height << ")\n";
 		//context->window.draw(rectangle);
 		context->canvas->draw(rectangle);
 	}
@@ -204,6 +207,10 @@ void bindGraphicsModule(sol::state &lua) {
 	graphics.set_function("setBackgroundColor", [&](sol::table colorTable) {
 		graphics::setBackgroundColor(colorTable, lua);
 	});
+	graphics.set_function("clear", [&](sol::table colorTable) {
+		graphics::setBackgroundColor(colorTable, lua);
+	});
+
 
 	// Expose the draw function
 	graphics.set_function("draw", [&](sf::Texture *texture, f32 x, f32 y,
@@ -371,6 +378,7 @@ public:
 	void finish() {
 		//window.display();
 
+
 		renderTexture.display();
 
 		window.clear(sf::Color::Black);
@@ -434,6 +442,7 @@ void bindResolutionManagerModulePush(sol::state &lua, sf::RenderWindow &window) 
 	GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
 	if (!context) return;
 	context->canvas = &resolutionManager->renderTexture;
+	lua["resolutionManager"] = resolutionManager;
 }
 
 
@@ -505,7 +514,9 @@ std::unordered_map<std::string, sf::Keyboard::Key> keyMap = {
 	{"Enter", sf::Keyboard::Enter},
 	{"Space", sf::Keyboard::Space},
 	{"Escape", sf::Keyboard::Escape},
-	{"escape", sf::Keyboard::Escape}
+	{"escape", sf::Keyboard::Escape},
+	{"enter", sf::Keyboard::Enter},
+	{"return", sf::Keyboard::Return}
 	// You can add all keys from sf::Keyboard::Key
 };
 
@@ -527,14 +538,291 @@ void eventQuit(sol::state &lua) {
 	context->window.close();
 }
 
+
+
 void bindEventModule(sol::state &lua) {
 	sol::table event = lua.create_table();
 	// Expose the set_window_mode function
 	event.set_function("quit", [&]() {
 		eventQuit(lua);
 	});
+	
+
 	lua["mo"]["event"] = event;
 }
+#pragma endregion
+
+#pragma region Audio Module
+
+namespace audio {
+
+	// TODO (mo) we might not be able to distinguish a sound effect from music based on isMusicFile() maybe!
+	// This does not expose setters, getters, pause, etc...
+	class AudioSource {
+	public:
+		// Load the audio file and determine whether to use Sound or Music
+
+		bool loadFromFile(const std::string &filename, const std::string &type) {
+
+			if (type == "static") {
+				soundBuffer = std::make_unique<sf::SoundBuffer>();
+				if (soundBuffer->loadFromFile(filename)) {
+					sound = std::make_unique<sf::Sound>();
+					sound->setBuffer(*soundBuffer);
+					return true;
+				}
+			}
+			else if (type == "stream") {
+				music = std::make_unique<sf::Music>();
+				return music->openFromFile(filename);
+			}
+
+			return false;
+		}
+
+		bool loadFromFile(const std::string &filename) {
+			if (isMusicFile(filename)) {
+				music = std::make_unique<sf::Music>();
+				return music->openFromFile(filename);
+			}
+			else {
+				soundBuffer = std::make_unique<sf::SoundBuffer>();
+				if (soundBuffer->loadFromFile(filename)) {
+					sound = std::make_unique<sf::Sound>();
+					sound->setBuffer(*soundBuffer);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Play the audio
+		void play() {
+			if (music) {
+				music->play();
+			}
+			else if (sound) {
+				sound->play();
+			}
+		}
+
+		// Set the volume
+		void setVolume(float volume) {
+			if (music) {
+				music->setVolume(volume);
+			}
+			else if (sound) {
+				sound->setVolume(volume);
+			}
+		}
+
+		// Set looping
+		void setLoop(bool loop) {
+			if (music) {
+				music->setLoop(loop);
+			}
+			else if (sound) {
+				sound->setLoop(loop);
+			}
+		}
+
+		void pause() {
+			if (music) music->pause();
+			else sound->pause();
+		}
+
+		// Additional functions can be added as needed, such as stop, pause, etc.
+
+	private:
+		std::unique_ptr<sf::SoundBuffer> soundBuffer;
+		std::unique_ptr<sf::Sound> sound;
+		std::unique_ptr<sf::Music> music;
+
+		// Determine if the file is music based on its extension
+		bool isMusicFile(const std::string &filename) {
+			const std::string musicExtensions[] = { ".ogg", ".wav", ".flac", ".mp3" };
+			for (const auto &ext : musicExtensions) {
+				if (filename.size() >= ext.size() &&
+					filename.compare(filename.size() - ext.size(), ext.size(), ext) == 0) {
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+
+	void bindAudioModule(sol::state &lua) {
+		// Create the `mo` table if it doesn't exist
+		sol::table mo = lua["mo"].get_or_create<sol::table>();
+
+		// Create the `audio` table under `mo`
+		sol::table audio = mo["audio"].get_or_create<sol::table>();
+
+		// Bind sf::SoundBuffer
+		audio.new_usertype<sf::SoundBuffer>(
+			"SoundBuffer",
+			sol::constructors<sf::SoundBuffer()>(),
+			"loadFromFile", &sf::SoundBuffer::loadFromFile
+		);
+
+		// Bind sf::Sound
+		audio.new_usertype<sf::Sound>(
+			"Sound",
+			sol::constructors<sf::Sound()>(),
+			"setBuffer", &sf::Sound::setBuffer,
+			"play", &sf::Sound::play,
+			"pause", &sf::Sound::pause,
+			"stop", &sf::Sound::stop
+		);
+
+		audio["Sound"]["setVolume"] = [](sf::Sound &self, float volume) { self.setVolume(volume); };
+		audio["Sound"]["setLoop"] = [](sf::Sound &self, bool loop) { self.setLoop(loop); };
+		audio["Sound"]["setPitch"] = [](sf::Sound &self, float pitch) { self.setPitch(pitch); };
+		audio["Sound"]["setPosition"] = [](sf::Sound &self, float x, float y, float z) { self.setPosition(x, y, z); };
+
+
+		// Bind sf::Music
+		audio.new_usertype<sf::Music>(
+			"Music",
+			sol::constructors<sf::Music()>(),
+			"openFromFile", &sf::Music::openFromFile,
+			"play", &sf::Music::play,
+			"pause", &sf::Music::pause,
+			"stop", &sf::Music::stop
+		);
+
+		audio["Music"]["setVolume"] = [](sf::Music &self, float volume) { self.setVolume(volume); };
+		audio["Music"]["setLoop"] = [](sf::Music &self, bool loop) { self.setLoop(loop); };
+		audio["Music"]["setPitch"] = [](sf::Music &self, float pitch) { self.setPitch(pitch); };
+		audio["Music"]["setPosition"] = [](sf::Music &self, float x, float y, float z) { self.setPosition(x, y, z); };
+
+	}
+
+	void bindSimplifiedAudioModule(sol::state &lua) {
+		// Create the `mo` table if it doesn't exist
+		sol::table mo = lua["mo"].get_or_create<sol::table>();
+
+		// Create the `audio` table under `mo`
+		sol::table audio = mo["audio"].get_or_create<sol::table>();
+
+		// Bind the AudioSource class
+		audio.new_usertype<AudioSource>(
+			"AudioSource",
+			sol::constructors<AudioSource()>(),
+			//"loadFromFile", &AudioSource::loadFromFile,
+			"play", &AudioSource::play,
+			"setVolume", &AudioSource::setVolume,
+			"setLoop", &AudioSource::setLoop,
+			"pause", &AudioSource::pause
+		);
+
+		// Add the newSource function to the audio table
+		audio.set_function("newSource", [](const std::string &filename) {
+			auto source = std::make_shared<AudioSource>();
+			if (source->loadFromFile(filename)) {
+				return source;
+			}
+			return std::shared_ptr<AudioSource>(nullptr); // Return null if the file fails to load
+		});
+
+		audio.set_function("newSource", [](const std::string &filename, const std::string &type) {
+			std::cout << "Typed newSource() called.\n";
+			auto source = std::make_shared<AudioSource>();
+			if (source->loadFromFile(filename, type)) {
+				return source;
+			}
+			return std::shared_ptr<AudioSource>(nullptr); // Return null if the file fails to load
+			});
+	}
+
+}
+
+#pragma endregion
+
+
+#pragma region Timer Module
+#include <numeric>
+
+namespace timer {
+
+	// TODO(mo) we might not want to use a class and lua["mo"]["timer"] = timer obj we might want to prepere procedural func calls
+	class Timer {
+	public:
+		Timer()
+			: frameTimes(), fps(0), lastFrameTime(sf::Time::Zero) {
+			clock.restart();
+			lastTime = clock.getElapsedTime();
+			lastFrameStart = clock.getElapsedTime().asSeconds();
+		}
+
+		float getAverageDelta() const {
+			if (frameTimes.empty()) return 0.0f;
+			float total = std::accumulate(frameTimes.begin(), frameTimes.end(), 0.0f);
+			return total / static_cast<float>(frameTimes.size());
+		}
+
+		float getDelta() const {
+			return lastFrameTime.asSeconds();
+		}
+
+		int getFPS() const {
+			return fps;
+		}
+
+		float getTime() const {
+			return clock.getElapsedTime().asSeconds();
+		}
+
+		void sleep(float seconds) {
+			sf::sleep(sf::seconds(seconds));
+		}
+
+		void step() {
+			sf::Time currentTime = clock.getElapsedTime();
+			lastFrameTime = currentTime - lastTime;
+			lastTime = currentTime;
+
+			if (!frameTimes.empty() && getTime() - lastFrameStart >= 1.0f) {
+				fps = static_cast<int>(frameTimes.size());
+				frameTimes.clear();
+				lastFrameStart = getTime();
+			}
+
+			frameTimes.push_back(lastFrameTime.asSeconds());
+		}
+
+	private:
+		sf::Clock clock;
+		sf::Time lastTime;
+		sf::Time lastFrameTime;
+		float lastFrameStart;
+		std::vector<float> frameTimes;
+		int fps;
+	};
+
+	void bindTimerModule(sol::state &lua) {
+		// Retrieve the existing `mo` table or create it if it doesn't exist
+		sol::table mo = lua["mo"].get_or_create<sol::table>();
+
+		// Retrieve the existing `timer` table or create it if it doesn't exist
+		sol::table timerM = mo["timer"].get_or_create<sol::table>();
+
+		// Expose the Timer class to Lua
+		timerM.new_usertype<Timer>("Timer",
+			"getAverageDelta", &Timer::getAverageDelta,
+			"getDelta", &Timer::getDelta,
+			"getFPS", &Timer::getFPS,
+			"getTime", &Timer::getTime,
+			"sleep", &Timer::sleep,
+			"step", &Timer::step
+		);
+
+		// Create a global instance of the Timer class and bind it to `mo.timer`.
+		auto timer = std::make_shared<Timer>();
+		mo["timer"] = timer;
+	}
+}
+
 #pragma endregion
 
 
@@ -549,13 +837,13 @@ int main() {
 	GlobalContext context;
 	// Load font if necessary
 	//context.activeFont = graphics::newFont("./data/arial.ttf", 12);;
-	
-	
 
 	bindGraphicsModule(lua);
 	bindWindowModule(lua);		
 	bindEventModule(lua);
-	
+	//audio::bindAudioModule(lua);
+	audio::bindSimplifiedAudioModule(lua);
+	timer::bindTimerModule(lua);
 	
 	
 	// TODO(MO): Need to catch silent errors e.g. calling non-existing module or function
@@ -595,10 +883,6 @@ int main() {
 	}
 
 	//if(!context.pushModuleUsed) createWindow(context);
-	
-	
-
-	
 
 	// Main loop
 	while (context.window.isOpen()) {
@@ -614,6 +898,14 @@ int main() {
 			if (event.type == sf::Event::Closed) {
 				context.window.close();
 			}
+			
+			if (event.type == sf::Event::Resized) {
+				// NOTE(MO): not sure if that works, we need to test it later :)
+				ResolutionManager *rm = lua["resolutionManager"].get<ResolutionManager *>();
+				if (rm) {
+					rm->resize(event.size.width, event.size.height);
+				}
+			}
 		}
 
 		// Call `mo.update` with deltaTime
@@ -624,8 +916,6 @@ int main() {
 		else {
 			std::cerr << "Error: 'mo.update' is not defined in Lua" << std::endl;
 		}
-		
-		
 
 		// Clear the window
 		if(!context.pushModuleUsed)

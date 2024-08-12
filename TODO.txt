@@ -1,0 +1,55 @@
+
+
+# Graphics Module
+[] Code `print` and `printf` for text rendering with text alignment and text styling
+[] Font needs to have getWidth, getHeight similar to love2d
+[] Ensure `.draw` works fine for sprites
+[] shapes library similar to love2d for rectangles, circles, convex shapes, points, polygons, vertex arrays, etc..
+[] Play with default texture filtering (nearest and bilinear)
+[] `clear` graphics window color
+[] system for `setDrawColor` for all drawable objects
+[] Global transformation state similar to push and pop
+[] Scene Graph for parent child relationship rendering
+[] Depth Layers and Sorting, Alpha blending
+
+# Keyboard Module
+[] Add isDown key function
+
+# Games Examples
+[] Make Pong Game
+
+# Architecture
+[] Refactor code to modules
+
+# Physics
+[] Build interface to box2d also update to latest box2d
+[] Pixel Perfect Collision
+
+-------------------
+# Systems
+[] Resolution Indepedent Rendering LetterBoxing Interface
+[] Integrate class.lua
+[] 2D Cameras, Views, Viewports, Scrolling, Parallax Effect
+[] Particles, Modifiers, Emitters
+[] Shaders, VFXs
+[] Tilemaps, Tiled, Parsors, Auto Tiling
+
+# Packages and Build
+[] Build to Windows, Linux, MacOS, and Browser
+
+# Learning Materials
+[] AI, Path Finding
+[] Procedural Generations
+[] Shaders and VFXs
+[] Documentations
+[] Slides, Videos
+[] Websites, Examples
+
+=================
+# Optional
+[] ImGUI Integration and Interface
+
+
+
+# Resources
+https://gafferongames.com/post/fix_your_timestep/

@@ -108,6 +108,39 @@
     <ClCompile Include="sfml_virtual_resolution_views.cpp">
       <Filter>Source Files\SFML Core Experiments</Filter>
     </ClCompile>
+    <ClCompile Include="sfml_text_alignment.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_resolutionIndependent_letterboxing.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_push_pop_transformations.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_object_hierarchies_scene_graph.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_shapes.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_raycasting.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_texture_filtering.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_timers_and_timelines.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_tilemap_tiled.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_camera_and_screenshake_tilemap.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_spritesheet_animation.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\grayscale.frag">
@@ -159,5 +192,16 @@
     <ClInclude Include="core.h">
       <Filter>Source Files\Modules</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="data\music.mp3">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="data\soundEffect.mp3">
+      <Filter>Resource Files</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt" />
   </ItemGroup>
 </Project>

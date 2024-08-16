@@ -7,6 +7,9 @@
 // NOTE(MO) it worked when I changed c++ version to 17.
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
+
+
+
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -14,6 +17,8 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <array>
+
 #pragma endregion
 
 struct Font {
@@ -118,6 +123,8 @@ namespace graphics {
 		context->activeFont = fontData;
 	}
 
+
+
 	// mo.graphics.print(text, x, y, [r], [sx], [sy], [ox], [oy], [kx], [ky])
 	void printText(const std::string &text, f32 x, f32 y, sol::state &lua,
 		sol::optional<f32> Pangle = sol::nullopt,
@@ -135,9 +142,7 @@ namespace graphics {
 		f32 kx = Pkx.value_or(0.0f);
 		f32 ky = Pky.value_or(0.0f);
 
-
 		std::cout << "[r] = " << angle << ", [sx] = " << sx << ", [sy] = " << sy << std::endl;
-
 
 		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
 
@@ -145,8 +150,6 @@ namespace graphics {
 			std::cout << "Error: globalContext not found in lua state.\n";  
 			return;
 		}
-
-
 		
 		sf::Text sfText;
 		if (!context->activeFont) {
@@ -159,15 +162,17 @@ namespace graphics {
 		sfText.setCharacterSize(context->activeFont->size); // Set text size
 		sfText.setFillColor(sf::Color::White); // Set text color
 
-
-
 		// origin x, y
-		
-	
 
-		sf::FloatRect textRect = sfText.getLocalBounds();
-		sfText.setOrigin(textRect.left + textRect.width / 2.0f,
-			textRect.top + textRect.height / 2.0f);
+		if (ox == 0 || oy == 0) {
+			sf::FloatRect textRect = sfText.getLocalBounds();
+			sfText.setOrigin(textRect.left + textRect.width / 2.0f,
+				textRect.top + textRect.height / 2.0f);
+		}
+		else {
+			sfText.setOrigin(ox, oy);
+		}
+		
 
 		// x, y
 		sfText.setPosition(x, y);
@@ -175,22 +180,16 @@ namespace graphics {
 		// scale x, y
 		sfText.setScale(sx, sy);
 
-
-
 		// applying shear transform shear-x, shear-y
 		sf::Transform shearTransform = sf::Transform(	1, kx, 0,
 										ky, 1, 0,
 										0, 0, 1);
-
 		// angle
 		sfText.setRotation(angle);
 
 		// Draw text on canvas
 		//context->window.draw(sfText, t); Since window in old system, but now we use canvas
 		context->canvas->draw(sfText, shearTransform);
-
-		
-		
 	}
 
 	// Dummy draw text Remove Later
@@ -323,10 +322,145 @@ void bindGraphicsModule(sol::state &lua) {
 		graphics::printText(text, x, y, lua, Pangle, Psx, Psy, Pox, Poy, Pkx, Pky);
 		});
 
+	
+
 	lua["mo"]["graphics"] = graphics;
 }
 
 #pragma endregion
+
+#pragma region Math Region
+
+
+
+
+namespace math {
+	class Example {
+	public:
+		Example(int value) : value(value) {}
+
+		void show_value() const {
+			std::cout << "The value is: " << value << std::endl;
+		}
+
+		void update_value(int new_value) {
+			value = new_value;
+			std::cout << "Value updated to: " << value << std::endl;
+		}
+
+	private:
+		int value;
+	};
+	
+
+	void bindMathModule(sol::state &lua) {
+		// Create the 'math' table
+		sol::table math = lua.create_table();
+
+		// Bind the Example class to the 'math' table
+		math.new_usertype<Example>(
+			"Example",
+			sol::constructors<Example(int)>(),  // Bind the constructor
+			"show_value", &Example::show_value,  // Bind the show_value method
+			"update_value", &Example::update_value  // Bind the update_value method
+		);
+
+		// Ensure 'mo' table exists
+		if (!lua["mo"].valid()) {
+			lua["mo"] = lua.create_table();
+		}
+
+		// Assign the 'math' table to 'mo.math'
+		lua["mo"]["math"] = math;
+	}
+
+
+	class TransformWrapper {
+	public:
+		TransformWrapper() = default;
+		TransformWrapper(const TransformWrapper &other) : transform(other.transform) {}
+
+		// Methods to interact with sf::Transform
+		void translate(float x, float y) {
+			transform.translate(x, y);
+		}
+
+		void rotate(float angle) {
+			transform.rotate(angle);
+		}
+
+		void scale(float factorX, float factorY) {
+			transform.scale(factorX, factorY);
+		}
+
+		void combine(const TransformWrapper &other) {
+			transform.combine(other.transform);
+		}
+
+		sol::table transformPoint(float x, float y, sol::state &lua) const {
+			sf::Vector2f result = transform.transformPoint(x, y);
+			sol::table pointTable = lua.create_table();
+			pointTable["x"] = result.x;
+			pointTable["y"] = result.y;
+			return pointTable;
+		}
+
+		// Optionally, expose matrix as a Lua table
+		 // Expose matrix as a Lua table
+		sol::table getMatrix(sol::state &lua) const {
+			const float *matrix = transform.getMatrix();
+			sol::table matrixTable = lua.create_table();
+			matrixTable["a"] = matrix[0];
+			matrixTable["b"] = matrix[1];
+			matrixTable["c"] = matrix[2];
+			matrixTable["d"] = matrix[4];
+			matrixTable["e"] = matrix[5];
+			matrixTable["f"] = matrix[6];
+			matrixTable["g"] = matrix[8];
+			matrixTable["h"] = matrix[9];
+			matrixTable["i"] = matrix[10];
+			return matrixTable;
+		}
+
+		// Methods to access sf::Transform directly
+		const sf::Transform &getTransform() const {
+			return transform;
+		}
+
+	private:
+		sf::Transform transform;
+	};
+	
+
+	// Function to bind the TransformWrapper class to Lua
+	void bindTransformWrapper(sol::state &lua) {
+		lua.new_usertype<TransformWrapper>(
+			"Transform",
+			sol::constructors<TransformWrapper(), TransformWrapper(const TransformWrapper &)>(),
+			"translate", &TransformWrapper::translate,
+			"rotate", &TransformWrapper::rotate,
+			"scale", &TransformWrapper::scale,
+			"combine", &TransformWrapper::combine,
+			"transformPoint", [&](const TransformWrapper &self, float x, float y) -> sol::table {
+				// Use the Lua state available in this scope
+				return self.transformPoint(x, y, lua);
+			},
+			"getMatrix", [&lua](const TransformWrapper &self) -> sol::table {
+				return self.getMatrix(lua);
+			}
+		);
+	}
+
+
+	// Function to bind the sf::Transform class to Lua
+	
+	
+
+}
+
+
+#pragma endregion
+
 
 #pragma region Window Module
 
@@ -833,7 +967,7 @@ namespace timer {
 int main() {
 	sf::Clock clock;
 	sol::state lua;
-	lua.open_libraries(sol::lib::base, sol::lib::package); // sol::lib::package i think its used to give us the ability to `require` modules, maybe ?
+	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::io); // sol::lib::package i think its used to give us the ability to `require` modules, maybe ?
 	// Create the global `mo` table
 	lua["mo"] = lua.create_table();
 
@@ -848,7 +982,7 @@ int main() {
 	//audio::bindAudioModule(lua);
 	audio::bindSimplifiedAudioModule(lua);
 	timer::bindTimerModule(lua);
-	
+	math::bindTransformWrapper(lua);
 	
 	// TODO(MO): Need to catch silent errors e.g. calling non-existing module or function
 	// Might remove exceptions since that does not seem to catch it anyways

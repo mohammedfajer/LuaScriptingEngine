@@ -10,6 +10,9 @@ function mo.load()
     
     print("mo.load() called from c++")
 
+
+   
+
    --[[ mo.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
         resizable = false,
@@ -29,6 +32,9 @@ function mo.load()
         title = "My SFML Window"
     })
     print('here3')
+
+    
+   
 
 	smallFont = mo.graphics.newFont("./data/arial.ttf", 32)
 	largeFont = mo.graphics.newFont("./data/arial.ttf", 64)
@@ -73,6 +79,30 @@ function mo.load()
     musicTrack:play()
 
     musicPlaying = true
+
+
+  local transform = Transform.new()
+transform:translate(20, 20)
+transform:scale(2, 2)
+transform:rotate(45)
+
+-- Get and print the transformation matrix
+local matrix = transform:getMatrix()
+
+-- Print matrix values in a readable 3x3 format
+io.write(matrix.a, " ", matrix.b, " ", matrix.c, "\n")
+io.write(matrix.d, " ", matrix.e, " ", matrix.f, "\n")
+io.write(matrix.g, " ", matrix.h, " ", matrix.i, "\n")
+
+-- Combine with another transform
+local otherTransform = Transform.new()
+otherTransform:translate(10, 10)  -- Example transformation
+transform:combine(otherTransform)
+-- Transform a point
+local point = transform:transformPoint(50, 50)
+print("Transformed point: x =", point.x, ", y =", point.y)
+
+
 end
 
 -- This function is called every frame with the delta time
@@ -103,10 +133,6 @@ function mo.draw()
     mo.graphics.setFont(smallFont)
 
     mo.graphics.print("Hello", 10, 10)
-
-
- 
-  
 
     mo.graphics.print("Hi", 55, 40, angle)
     mo.graphics.print("Hi", 180, 40, 0, 2)

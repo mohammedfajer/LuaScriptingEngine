@@ -144,6 +144,12 @@
     <ClCompile Include="sfml_curves.cpp">
       <Filter>Source Files\SFML Systems</Filter>
     </ClCompile>
+    <ClCompile Include="sfml_shear_transformations.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_rotate_around_center.cpp">
+      <Filter>Source Files\SFML Core Experiments</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\grayscale.frag">

@@ -118,12 +118,89 @@ namespace graphics {
 		context->activeFont = fontData;
 	}
 
+	// mo.graphics.print(text, x, y, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	void printText(const std::string &text, f32 x, f32 y, sol::state &lua,
+		sol::optional<f32> Pangle = sol::nullopt,
+		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt)
+	{
+		std::cout << "mo.graphics.print(...) called.\n";
+
+		f32 angle = Pangle.value_or(0.0f);
+		f32 sx = Psx.value_or(1.0f);
+		f32 sy = Psy.value_or(1.0f);
+		f32 ox = Pox.value_or(0.0f);
+		f32 oy = Poy.value_or(0.0f);
+		f32 kx = Pkx.value_or(0.0f);
+		f32 ky = Pky.value_or(0.0f);
+
+
+		std::cout << "[r] = " << angle << ", [sx] = " << sx << ", [sy] = " << sy << std::endl;
+
+
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";  
+			return;
+		}
+
+
+		
+		sf::Text sfText;
+		if (!context->activeFont) {
+			std::cout << "Font not set we need to set one later\n";
+			return;
+		}
+		// TODO(mo): if fount not setup we need to setup one!
+		sfText.setFont(context->activeFont->font);
+		sfText.setString(text);
+		sfText.setCharacterSize(context->activeFont->size); // Set text size
+		sfText.setFillColor(sf::Color::White); // Set text color
+
+
+
+		// origin x, y
+		
+	
+
+		sf::FloatRect textRect = sfText.getLocalBounds();
+		sfText.setOrigin(textRect.left + textRect.width / 2.0f,
+			textRect.top + textRect.height / 2.0f);
+
+		// x, y
+		sfText.setPosition(x, y);
+		
+		// scale x, y
+		sfText.setScale(sx, sy);
+
+
+
+		// applying shear transform shear-x, shear-y
+		sf::Transform shearTransform = sf::Transform(	1, kx, 0,
+										ky, 1, 0,
+										0, 0, 1);
+
+		// angle
+		sfText.setRotation(angle);
+
+		// Draw text on canvas
+		//context->window.draw(sfText, t); Since window in old system, but now we use canvas
+		context->canvas->draw(sfText, shearTransform);
+
+		
+		
+	}
+
 	// Dummy draw text Remove Later
 	void drawText(const std::string &text, float x, float y, sol::state &lua) {
 
 		std::cout << "drawText() called from lua.\n";
 
 		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+
+		if (!context || !context->window.isOpen()) return;
 
 		if (context && context->activeFont) {
 			sf::Text sfText;
@@ -132,7 +209,8 @@ namespace graphics {
 			sfText.setCharacterSize(context->activeFont->size); // Set text size
 			sfText.setFillColor(sf::Color::White); // Set text color
 			sfText.setPosition(x, y);
-			context->window.draw(sfText);
+		//	context->window.draw(sfText);
+			context->canvas->draw(sfText);
 		}
 		else {
 
@@ -201,15 +279,9 @@ void bindGraphicsModule(sol::state &lua) {
 	graphics.set_function("rectangle", [&](f32 x, f32 y, f32 width, f32 height, sol::optional<sol::table> colorTable = sol::nullopt) {
 		graphics::drawRectangle(x, y, width, height, lua, colorTable);
 	});
-	graphics.set_function("circle", [&](f32 x, f32 y, f32 radius, sol::optional<sol::table> colorTable = sol::nullopt) {
-		graphics::drawCircle(x, y, radius, lua, colorTable);
-	});
-	graphics.set_function("setBackgroundColor", [&](sol::table colorTable) {
-		graphics::setBackgroundColor(colorTable, lua);
-	});
-	graphics.set_function("clear", [&](sol::table colorTable) {
-		graphics::setBackgroundColor(colorTable, lua);
-	});
+	graphics.set_function("circle", [&](f32 x, f32 y, f32 radius, sol::optional<sol::table> colorTable = sol::nullopt) { graphics::drawCircle(x, y, radius, lua, colorTable); });
+	graphics.set_function("setBackgroundColor", [&](sol::table colorTable) { graphics::setBackgroundColor(colorTable, lua); });
+	graphics.set_function("clear", [&](sol::table colorTable) { graphics::setBackgroundColor(colorTable, lua); });
 
 
 	// Expose the draw function
@@ -243,87 +315,20 @@ void bindGraphicsModule(sol::state &lua) {
 		graphics::drawText(text, x, y, lua);
 	});
 
+	graphics.set_function("print", [&](const std::string &text, f32 x, f32 y,
+		sol::optional<f32> Pangle = sol::nullopt,
+		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt) {
+		graphics::printText(text, x, y, lua, Pangle, Psx, Psy, Pox, Poy, Pkx, Pky);
+		});
+
 	lua["mo"]["graphics"] = graphics;
 }
 
 #pragma endregion
 
 #pragma region Window Module
-
-
-// Example ResolutionManager class (adjust as needed)
-//class ResolutionManager {
-//public:
-//	ResolutionManager(sf::RenderWindow &window)
-//		: window(window), virtualWidth(800), virtualHeight(600), fullscreen(false) {}
-//
-//	void setupScreen(f32 virtualWidth, f32 virtualHeight, u32 windowWidth, u32 windowHeight, sol::table settings) {
-//
-//		std::cout << "SetupScreen (..) called from lua.\n";
-//
-//		this->virtualWidth = virtualWidth;
-//		this->virtualHeight = virtualHeight;
-//		this->fullscreen = settings["fullscreen"].get_or(false);
-//
-//		sf::VideoMode mode(windowWidth, windowHeight);
-//		sf::Uint32 style = this->fullscreen ? sf::Style::Fullscreen : sf::Style::Close;
-//
-//		try {
-//			window.create(mode, "title", style);
-//			window.setVerticalSyncEnabled(settings["vsync"].get_or(true));
-//		}
-//		catch (const std::exception &e) {
-//			std::cerr << "Exception during window creation: " << e.what() << std::endl;
-//		}
-//		catch (...) {
-//			std::cerr << "Unknown error during window creation." << std::endl;
-//		}
-//	
-//
-//		updateView();
-//	}
-//
-//	void resize(unsigned int width, unsigned int height) {
-//		window.setSize(sf::Vector2u(width, height));
-//		updateView();
-//	}
-//
-//	void start() {
-//		std::cout << "Start from push module.\n";
-//		window.clear(); // TODO need to get the background color from the context here?
-//		window.setView(view);
-//	}
-//
-//	void finish() {
-//
-//		std::cout << "Display from push module.\n";
-//		window.display();
-//	}
-//
-//private:
-//	void updateView() {
-//		float windowWidth = window.getSize().x;
-//		float windowHeight = window.getSize().y;
-//
-//		float scaleX = windowWidth / virtualWidth;
-//		float scaleY = windowHeight / virtualHeight;
-//		float scale = std::min(scaleX, scaleY);
-//
-//		view.setSize(virtualWidth * scale, virtualHeight * scale);
-//		view.setCenter(virtualWidth / 2.0f, virtualHeight / 2.0f);
-//		window.setView(view); // Make sure the view is set to the window
-//
-//		// Debug info
-//		std::cout << "View Size: (" << view.getSize().x << ", " << view.getSize().y << ")\n";
-//		std::cout << "View Center: (" << view.getCenter().x << ", " << view.getCenter().y << ")\n";
-//	}
-//
-//	sf::RenderWindow &window;
-//	sf::View view;
-//	float virtualWidth;
-//	float virtualHeight;
-//	bool fullscreen;
-//};
 
 
 class ResolutionManager {
@@ -537,7 +542,6 @@ void eventQuit(sol::state &lua) {
 	if (!context || !context->window.isOpen()) return;
 	context->window.close();
 }
-
 
 
 void bindEventModule(sol::state &lua) {
@@ -826,7 +830,7 @@ namespace timer {
 #pragma endregion
 
 
-int OLD() {
+int main() {
 	sf::Clock clock;
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::package); // sol::lib::package i think its used to give us the ability to `require` modules, maybe ?

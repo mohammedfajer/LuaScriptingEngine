@@ -1,9 +1,10 @@
 
 
 # Graphics Module
-[] Code `print` and `printf` for text rendering with text alignment and text styling
+[x] Code `print` with optinonal and default paramters  
+[] `printf` for text rendering with text alignment and text styling
 [] Font needs to have getWidth, getHeight similar to love2d
-[] Ensure `.draw` works fine for sprites
+[] Ensure `.draw` works fine for sprites (rotation, origin, scale, shear)
 [] shapes library similar to love2d for rectangles, circles, convex shapes, points, polygons, vertex arrays, etc..
 [] Play with default texture filtering (nearest and bilinear)
 [] `clear` graphics window color
@@ -13,13 +14,14 @@
 [] Depth Layers and Sorting, Alpha blending
 
 # Keyboard Module
-[] Add isDown key function
+[] Add isDown key function and register more keys
 
 # Games Examples
 [] Make Pong Game
 
 # Architecture
 [] Refactor code to modules
+[] Unity Build, no oop bs
 
 # Physics
 [] Build interface to box2d also update to latest box2d
@@ -52,6 +54,8 @@
 [] Tilemap Editor
 [] Particles Editor
 
+# Things to learn later
+[] Git submodules or fetchcontent
 
 
 # Resources

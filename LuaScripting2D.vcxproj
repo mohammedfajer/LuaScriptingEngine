@@ -156,8 +156,10 @@
     <ClCompile Include="sfml_push_pop_transformations.cpp" />
     <ClCompile Include="sfml_raycasting.cpp" />
     <ClCompile Include="sfml_resolutionIndependent_letterboxing.cpp" />
+    <ClCompile Include="sfml_rotate_around_center.cpp" />
     <ClCompile Include="sfml_shaders.cpp" />
     <ClCompile Include="sfml_shapes.cpp" />
+    <ClCompile Include="sfml_shear_transformations.cpp" />
     <ClCompile Include="sfml_spritesheet_animation.cpp" />
     <ClCompile Include="sfml_textures.cpp" />
     <ClCompile Include="sfml_texture_filtering.cpp" />

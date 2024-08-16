@@ -7,7 +7,7 @@ sf::Vector2f quadraticBezier(sf::Vector2f P0, sf::Vector2f P1, sf::Vector2f P2, 
     return u * u * P0 + 2 * u * t * P1 + t * t * P2;
 }
 
-int main() {
+int CustomEntryPointCurves() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Enemy Following Bezier Curve");
 
     sf::CircleShape enemy(10); // Enemy shape (a circle)

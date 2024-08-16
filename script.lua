@@ -4,7 +4,7 @@ Player = require('player')
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
-
+  local angle = 0
 -- This function is called when the script is loaded
 function mo.load()
     
@@ -23,8 +23,8 @@ function mo.load()
      print('here2')
     -- Assuming push is bound and available
     push:setupScreen(1280, 720, 1280, 720, {
-        fullscreen = true,
-        resizable = true,
+        fullscreen = false,
+        resizable = false,
         vsync = false,
         title = "My SFML Window"
     })
@@ -89,6 +89,7 @@ function mo.update(dt)
 
    -- mo.timer:sleep(0.1) -- Sleep for 100 milliseconds
 
+    angle = angle + 100 * delta
 
 end
 
@@ -99,6 +100,20 @@ function mo.draw()
   --  print("mo.draw()")
     mo.graphics.rectangle(2, 2, 20, 20, {r=255, g=0, b=0})
     -- end our drawing to push
+    mo.graphics.setFont(smallFont)
+
+    mo.graphics.print("Hello", 10, 10)
+
+
+ 
+  
+
+    mo.graphics.print("Hi", 55, 40, angle)
+    mo.graphics.print("Hi", 180, 40, 0, 2)
+    mo.graphics.print("Hi", 280, 40, 0, 1, 1, 0, 0, 0, 1)
+
+    mo.graphics.drawText("Hllo", 100, 200)
+   
     push:finish()
 end
 

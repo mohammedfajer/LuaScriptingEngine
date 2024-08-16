@@ -23,7 +23,7 @@ function mo.load()
      print('here2')
     -- Assuming push is bound and available
     push:setupScreen(1280, 720, 1280, 720, {
-        fullscreen = false,
+        fullscreen = true,
         resizable = true,
         vsync = false,
         title = "My SFML Window"

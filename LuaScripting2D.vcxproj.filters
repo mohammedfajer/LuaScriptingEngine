@@ -141,6 +141,9 @@
     <ClCompile Include="sfml_spritesheet_animation.cpp">
       <Filter>Source Files\SFML Systems</Filter>
     </ClCompile>
+    <ClCompile Include="sfml_curves.cpp">
+      <Filter>Source Files\SFML Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\grayscale.frag">

@@ -826,7 +826,7 @@ namespace timer {
 #pragma endregion
 
 
-int main() {
+int OLD() {
 	sf::Clock clock;
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::package); // sol::lib::package i think its used to give us the ability to `require` modules, maybe ?

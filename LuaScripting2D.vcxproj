@@ -76,13 +76,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\include;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\include;$(ProjectDir)Dependencies\lua524\include;$(ProjectDir)Dependencies\sol2\single\single\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\lua524;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;D:\DESKTOP\GLToys\LuaScripting2D\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(ProjectDir)Dependencies\lua524;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -108,13 +108,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\lua524\include;C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\include;C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\sol2\single\single\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\include;$(ProjectDir)Dependencies\lua524\include;$(ProjectDir)Dependencies\sol2\single\single\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\lua524;C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;C:\Users\Mohammed Fajer\Desktop\LuaScriptingEngine\Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(ProjectDir)Dependencies\lua524;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

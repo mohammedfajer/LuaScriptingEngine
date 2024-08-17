@@ -181,6 +181,7 @@
     <None Include="data\pulse.vert" />
     <None Include="player.lua" />
     <None Include="script.lua" />
+    <None Include="test_printing_text.lua" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.jpg" />

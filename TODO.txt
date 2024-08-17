@@ -2,7 +2,17 @@
 
 # Graphics Module
 [x] Code `print` with optinonal and default paramters  
+	[x] mo.graphics.print(text, x, y, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	[x] mo.graphics.print(text, font, x, y, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	[x] mo.graphics.print( text, transform )
+	[x] mo.graphics.print( text, font, transform )
 [] `printf` for text rendering with text alignment and text styling
+	Wrapping + Alignment (Left, Right, Center, Justify)
+	[] mo.graphics.printf(text, x, y, limit, align, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	[] mo.graphics.printf(text, font, x, y, limit, align, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	[] mo.graphics.printf(text, transform, limit, align)
+	[] mo.graphics.printf(text, font, transform, limit, align)
+
 [] Font needs to have getWidth, getHeight similar to love2d
 [] Ensure `.draw` works fine for sprites (rotation, origin, scale, shear)
 [] shapes library similar to love2d for rectangles, circles, convex shapes, points, polygons, vertex arrays, etc..
@@ -34,7 +44,7 @@
 [] 2D Cameras, Views, Viewports, Scrolling, Parallax Effect
 [] Particles, Modifiers, Emitters
 [] Shaders, VFXs
-[] Tilemaps, Tiled, Parsors, Auto Tiling
+[] Tilemaps, Tilemap editor Tiled, Parsors, Auto Tiling
 
 # Packages and Build
 [] Build to Windows, Linux, MacOS, and Browser

@@ -15,6 +15,7 @@
 #include <memory>
 #include "core.h"
 #include <sstream>
+
 #include <vector>
 #include <string>
 #include <array>
@@ -85,18 +86,128 @@ std::shared_ptr<sf::Texture> getTexture(const std::string &filepath) {
 	return loadTexture(filepath);
 }
 
+
+#pragma region Math Region
+
+
+
+
+namespace math {
+
+
+
+	class TransformWrapper {
+	public:
+		TransformWrapper() = default;
+		TransformWrapper(const TransformWrapper &other) : transform(other.transform) {}
+
+		// Methods to interact with sf::Transform
+		void translate(float x, float y) {
+			transform.translate(x, y);
+		}
+
+		void rotate(float angle) {
+			transform.rotate(angle);
+		}
+
+		void scale(float factorX, float factorY) {
+			transform.scale(factorX, factorY);
+		}
+
+		void combine(const TransformWrapper &other) {
+			transform.combine(other.transform);
+		}
+
+		sol::table transformPoint(float x, float y, sol::state &lua) const {
+			sf::Vector2f result = transform.transformPoint(x, y);
+			sol::table pointTable = lua.create_table();
+			pointTable["x"] = result.x;
+			pointTable["y"] = result.y;
+			return pointTable;
+		}
+
+		// Optionally, expose matrix as a Lua table
+		 // Expose matrix as a Lua table
+		sol::table getMatrix(sol::state &lua) const {
+			const float *matrix = transform.getMatrix();
+			sol::table matrixTable = lua.create_table();
+			matrixTable["a"] = matrix[0];
+			matrixTable["b"] = matrix[1];
+			matrixTable["c"] = matrix[2];
+			matrixTable["d"] = matrix[4];
+			matrixTable["e"] = matrix[5];
+			matrixTable["f"] = matrix[6];
+			matrixTable["g"] = matrix[8];
+			matrixTable["h"] = matrix[9];
+			matrixTable["i"] = matrix[10];
+			return matrixTable;
+		}
+
+		// Methods to access sf::Transform directly
+		const sf::Transform &getTransform() const {
+			return transform;
+		}
+
+	private:
+		sf::Transform transform;
+	};
+
+
+	// Function to bind the TransformWrapper class to Lua
+	void bindTransformWrapper(sol::state &lua) {
+
+
+
+		lua.new_usertype<TransformWrapper>(
+			"Transform",
+			sol::constructors<TransformWrapper(), TransformWrapper(const TransformWrapper &)>(),
+			"translate", &TransformWrapper::translate,
+			"rotate", &TransformWrapper::rotate,
+			"scale", &TransformWrapper::scale,
+			"combine", &TransformWrapper::combine,
+			"transformPoint", [&](const TransformWrapper &self, float x, float y) -> sol::table {
+				// Use the Lua state available in this scope
+				return self.transformPoint(x, y, lua);
+			},
+			"getMatrix", [&lua](const TransformWrapper &self) -> sol::table {
+				return self.getMatrix(lua);
+			}
+		);
+
+
+	}
+
+
+
+
+
+}
+
+
+#pragma endregion
+
+
 // Dummy module namespace
 namespace graphics {
 
 	// NOTE(MO): not used yet!
-	enum class AlignMode {
-		center,
-		left,
-		right,
-		justify
+	// Enum for text alignment options
+	enum class TextAlignment {
+		Left,
+		Right,
+		Center,
+		Justify
 	};
-
-	
+	struct TextParams
+	{
+		f32 r;
+		f32 sx;
+		f32 sy;
+		f32 ox;
+		f32 oy;
+		f32 kx;
+		f32 ky;
+	};
 
 	Font *newFont(const std::string &filepath, unsigned int fontSize) {
 		std::cout << "Creating font with size, PATH = " << filepath << ", SIZE = " << fontSize << std::endl;
@@ -123,6 +234,116 @@ namespace graphics {
 		context->activeFont = fontData;
 	}
 
+	
+
+	void printText(const std::string &text, const math::TransformWrapper &transform, sol::state &lua) {
+		std::cout << "mo.graphics.print(...) called. with transform\n";
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";
+			return;
+		}
+
+		sf::Text sfText;
+		if (!context->activeFont) {
+			std::cout << "Font not set we need to set one later\n";
+			return;
+		}
+		// TODO(mo): if fount not setup we need to setup one!
+		sfText.setFont(context->activeFont->font);
+		sfText.setString(text);
+		sfText.setCharacterSize(context->activeFont->size); // Set text size
+		sfText.setFillColor(sf::Color::White); // Set text color
+		context->canvas->draw(sfText, transform.getTransform());
+	}
+
+	void printText(const std::string &text, Font *fontData, const math::TransformWrapper &transform, sol::state &lua) {
+		std::cout << "mo.graphics.print(...) called. with transform\n";
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";
+			return;
+		}
+
+		sf::Text sfText;
+		if (!fontData) {
+			std::cout << "Font not set we need to set one later\n";
+			return;
+		}
+		// TODO(mo): if fount not setup we need to setup one!
+		sfText.setFont(fontData->font);
+		sfText.setString(text);
+		sfText.setCharacterSize(fontData->size); // Set text size
+		sfText.setFillColor(sf::Color::White); // Set text color
+		context->canvas->draw(sfText, transform.getTransform());
+	}
+
+
+	void printText(const std::string &text, Font *fontData, f32 x, f32 y, sol::state &lua,
+		sol::optional<f32> Pangle = sol::nullopt,
+		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt)
+	{
+		std::cout << "mo.graphics.print(...) called. with font\n";
+
+		f32 angle = Pangle.value_or(0.0f);
+		f32 sx = Psx.value_or(1.0f);
+		f32 sy = Psy.value_or(1.0f);
+		f32 ox = Pox.value_or(0.0f);
+		f32 oy = Poy.value_or(0.0f);
+		f32 kx = Pkx.value_or(0.0f);
+		f32 ky = Pky.value_or(0.0f);
+
+		std::cout << "[r] = " << angle << ", [sx] = " << sx << ", [sy] = " << sy << std::endl;
+
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";
+			return;
+		}
+
+		sf::Text sfText;
+		if (!fontData) {
+			std::cout << "Font not set we need to set one later\n";
+			return;
+		}
+		// TODO(mo): if fount not setup we need to setup one!
+		sfText.setFont(fontData->font);
+		sfText.setString(text);
+		sfText.setCharacterSize(fontData->size); // Set text size
+		sfText.setFillColor(sf::Color::White); // Set text color
+
+		// origin x, y
+
+		if (ox == 0 || oy == 0) {
+			sf::FloatRect textRect = sfText.getLocalBounds();
+			sfText.setOrigin(textRect.left + textRect.width / 2.0f,
+				textRect.top + textRect.height / 2.0f);
+		}
+		else {
+			sfText.setOrigin(ox, oy);
+		}
+
+
+		// x, y
+		sfText.setPosition(x, y);
+
+		// scale x, y
+		sfText.setScale(sx, sy);
+
+		// applying shear transform shear-x, shear-y
+		sf::Transform shearTransform = sf::Transform(1, kx, 0,
+			ky, 1, 0,
+			0, 0, 1);
+		// angle
+		sfText.setRotation(angle);
+
+		// Draw text on canvas
+		//context->window.draw(sfText, t); Since window in old system, but now we use canvas
+		context->canvas->draw(sfText, shearTransform);
+	}
 
 
 	// mo.graphics.print(text, x, y, [r], [sx], [sy], [ox], [oy], [kx], [ky])
@@ -212,10 +433,8 @@ namespace graphics {
 			context->canvas->draw(sfText);
 		}
 		else {
-
 			if (!context) std::cerr << "Error: globalContext not found in lua state.\n";
 			else if( !context->activeFont)  std::cerr << "Error: activeFont not found in lua state.\n";
-
 		}
 	}
 
@@ -244,6 +463,215 @@ namespace graphics {
 		circle.setFillColor(color);
 		context->window.draw(circle);
 	}
+
+	// Text Wrapping Algorithm
+	std::vector<std::string> wrapText(const std::string &text, sf::Font &font, u32 characterSize, f32 limit)
+	{
+		std::vector<std::string> wrappedLines;
+		std::string currentLine = "";
+		u32 currentLineWidth = 0;
+
+		std::istringstream textStream(text);
+
+		// Create an sf::Text object to measure the width of the text
+		sf::Text sfText;
+		sfText.setFont(font);
+		sfText.setCharacterSize(characterSize);
+
+		std::string word;
+
+		while (textStream >> word)
+		{
+			std::string testLine = currentLine + (currentLine.empty() ? "" : " ") + word;
+			sfText.setString(testLine);
+
+			// If the width exceeds the max width, wrap to a new line
+			if (sfText.getLocalBounds().width > limit) {
+				wrappedLines.push_back(currentLine);
+				currentLine = word; // Start the new line with the current word
+			}
+			else {
+				currentLine = testLine; // Otherwise, continue building the line
+			}
+		}
+
+		// Add the last line if there's any text left
+		if (!currentLine.empty()) {
+			wrappedLines.push_back(currentLine);
+		}
+
+		return wrappedLines;
+	}
+
+	// Function to draw wrapped text
+	void drawWrappedText(sf::RenderTexture *canvas, const std::vector<std::string> &lines, sf::Font &font, u32 characterSize, f32 x, f32 y, f32 lineSpacing = 5.0f) {
+		sf::Text sfText;
+		sfText.setFont(font);
+		sfText.setCharacterSize(characterSize);
+		sfText.setFillColor(sf::Color::White);
+
+		float currentY = y;
+
+		for (const std::string &line : lines) {
+			sfText.setString(line);
+			sfText.setPosition(x, currentY);
+			canvas->draw(sfText);
+			currentY += sfText.getLocalBounds().height + lineSpacing;
+		}
+	}
+
+
+	// TODO(mo): This needs to get transform for rotation, scale, origin, shear etc..
+	// Function to draw wrapped text with alignment
+	void drawWrappedText(sf::RenderTexture *canvas, const std::vector<std::string> &lines, sf::Font &font, u32 characterSize,
+		f32 x, f32 y, f32 limit, TextAlignment alignment = TextAlignment::Left, TextParams params, f32 lineSpacing = 5.0f) {
+		sf::Text sfText;
+		sfText.setFont(font);
+		sfText.setCharacterSize(characterSize);
+		sfText.setFillColor(sf::Color::White);
+		
+		//TODO(mo) add the shearing as well.
+		sfText.setRotation(params.r);
+		sfText.setScale(params.sx, params.sy);
+		sfText.setOrigin(params.ox, params.oy);
+
+
+
+		
+		float currentY = y;
+
+		for (const std::string &line : lines) {
+			sfText.setString(line);
+			float lineWidth = sfText.getLocalBounds().width;
+
+			float offsetX = 0.0f;  // Default is left alignment
+
+			if (alignment == TextAlignment::Right) {
+				offsetX = limit - lineWidth;  // Align right
+			}
+			else if (alignment == TextAlignment::Center) {
+				offsetX = (limit - lineWidth) / 2.0f;  // Center alignment
+			}
+			else if (alignment == TextAlignment::Justify && line != lines.back()) {
+				// For justification, adjust the space between words
+				std::istringstream lineStream(line);
+				std::vector<std::string> words;
+				std::string word;
+				while (lineStream >> word) {
+					words.push_back(word);
+				}
+
+				if (words.size() > 1) {
+					float totalWordWidth = 0;
+					for (const std::string &w : words) {
+						sfText.setString(w);
+						totalWordWidth += sfText.getLocalBounds().width;
+					}
+
+					float extraSpace = (limit - totalWordWidth) / (words.size() - 1);
+					float currentX = x;
+
+					for (size_t i = 0; i < words.size(); ++i) {
+						sfText.setString(words[i]);
+						sfText.setPosition(currentX, currentY);
+						canvas->draw(sfText);
+						currentX += sfText.getLocalBounds().width + extraSpace;
+					}
+
+					currentY += sfText.getLocalBounds().height + lineSpacing;
+					continue;  // Skip the normal drawing step for justified text
+				}
+			}
+
+			// Set position based on the alignment
+			sfText.setPosition(x + offsetX, currentY);
+			canvas->draw(sfText);
+
+			// Move to the next line
+			currentY += sfText.getLocalBounds().height + lineSpacing;
+		}
+	}
+
+	
+
+
+	TextAlignment getTextAlignment(const std::string &align)
+	{
+		if (!align.compare("left")) return TextAlignment::Left;
+		if (!align.compare("right")) return TextAlignment::Right;
+		if (!align.compare("center")) return TextAlignment::Center;
+		if (!align.compare("justify")) return TextAlignment::Justify;
+	}
+
+	// mo.graphics.printf(text, x, y, limit, align, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	void drawText(const std::string &text, f32 x, f32 y, f32 limit, const std::string &align,
+		sol::state &lua, sol::optional<f32> Pangle = sol::nullopt,
+		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt)
+	{
+
+		// TODO(mo): To be used ? 
+		f32 angle = Pangle.value_or(0.0f);
+		f32 sx = Psx.value_or(1.0f);
+		f32 sy = Psy.value_or(1.0f);
+		f32 ox = Pox.value_or(0.0f);
+		f32 oy = Poy.value_or(0.0f);
+		f32 kx = Pkx.value_or(0.0f);
+		f32 ky = Pky.value_or(0.0f);
+
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";
+			return;
+		}
+		// To be implemented
+		TextAlignment alignment = getTextAlignment(align);
+		auto wrappedTexts = wrapText(text, context->activeFont->font, context->activeFont->size, limit);
+		drawWrappedText(context->canvas, wrappedTexts, context->activeFont->font, context->activeFont->size, x, y);
+	}
+
+	// mo.graphics.printf(text, font, x, y, limit, align, [r], [sx], [sy], [ox], [oy], [kx], [ky])
+	void drawText(const std::string &text, Font* font, f32 x, f32 y, f32 limit, const std::string &align,
+		sol::state &lua, sol::optional<f32> Pangle = sol::nullopt,
+		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt)
+	{
+		// To be implemented
+
+		// TODO(mo): To be used ? 
+		f32 angle = Pangle.value_or(0.0f);
+		f32 sx = Psx.value_or(1.0f);
+		f32 sy = Psy.value_or(1.0f);
+		f32 ox = Pox.value_or(0.0f);
+		f32 oy = Poy.value_or(0.0f);
+		f32 kx = Pkx.value_or(0.0f);
+		f32 ky = Pky.value_or(0.0f);
+
+		GlobalContext *context = lua["globalContext"].get<GlobalContext *>();
+		if (!context || !context->window.isOpen()) {
+			std::cout << "Error: globalContext not found in lua state.\n";
+			return;
+		}
+		// To be implemented
+		TextAlignment alignment = getTextAlignment(align);
+		auto wrappedTexts = wrapText(text, font->font, font->size, limit);
+		drawWrappedText(context->canvas, wrappedTexts, font->font, font->size, x, y);
+	}
+
+	//mo.graphics.printf(text, transform, limit, align)
+	void drawText(const std::string &text, const math::TransformWrapper& transform, f32 limit, const std::string &align, sol::state &lua)
+	{
+		// To be implemented
+	}
+
+	//mo.graphics.printf(text, font, transform, limit, align)
+	void drawText(const std::string &text, Font *font, const math::TransformWrapper &transform, f32 limit, const std::string &align, sol::state &lua)
+	{
+		// To be implemented
+	}
+
 
 	void draw(sf::Texture *texture, f32 x, f32 y, sol::state &lua,
 		sol::optional<float> rotation = sol::nullopt,
@@ -314,152 +742,82 @@ void bindGraphicsModule(sol::state &lua) {
 		graphics::drawText(text, x, y, lua);
 	});
 
-	graphics.set_function("print", [&](const std::string &text, f32 x, f32 y,
-		sol::optional<f32> Pangle = sol::nullopt,
-		sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
-		sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
-		sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt) {
-		graphics::printText(text, x, y, lua, Pangle, Psx, Psy, Pox, Poy, Pkx, Pky);
-		});
+	//graphics.set_function("print", [&](const std::string &text, f32 x, f32 y,
+	//	sol::optional<f32> Pangle = sol::nullopt,
+	//	sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+	//	sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+	//	sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt) {
+	//	graphics::printText(text, x, y, lua, Pangle, Psx, Psy, Pox, Poy, Pkx, Pky);
+	//	});
 
-	
+	//graphics.set_function("print", [&](const std::string &text, Font *fontData, f32 x, f32 y,
+	//	sol::optional<f32> Pangle = sol::nullopt,
+	//	sol::optional<f32> Psx = sol::nullopt, sol::optional<f32> Psy = sol::nullopt,
+	//	sol::optional<f32> Pox = sol::nullopt, sol::optional<f32> Poy = sol::nullopt,
+	//	sol::optional<f32> Pkx = sol::nullopt, sol::optional<f32> Pky = sol::nullopt) {
+	//		graphics::printText(text, fontData, x, y, lua, Pangle, Psx, Psy, Pox, Poy, Pkx, Pky);
+	//	});
+
+
+	 // Set up a single C++ function that will handle both cases
+	graphics.set_function("print", [&](const std::string &text, sol::variadic_args args) {
+
+
+		// Argument handling
+		if (args.size() > 0 && args[0].is<math::TransformWrapper>()) {
+			// Case with just transform
+			
+			const math::TransformWrapper &transform = args[0].as<math::TransformWrapper>();
+			graphics::printText(text, transform, lua);
+		}
+
+		else if (args.size() > 0 && args[0].is<Font *>() && args[1].is<math::TransformWrapper>())
+		{
+			Font *font = args[0].as<Font *>();
+			const math::TransformWrapper &transform = args[1].as<math::TransformWrapper>();
+			graphics::printText(text, font, transform, lua);
+		}
+		
+		else if (args.size() > 0 && args[0].is<Font *>()) {
+			// Case with font
+			Font *font = args[0].as<Font *>();
+			float x = args[1].get<float>();
+			float y = args[2].get<float>();
+
+			// Extract optional parameters (angle, sx, sy, ox, oy, kx, ky)
+			sol::optional<float> angle = args.size() > 3 ? sol::optional<float>(args[3].get<float>()) : sol::nullopt;
+			sol::optional<float> sx = args.size() > 4 ? sol::optional<float>(args[4].get<float>()) : sol::nullopt;
+			sol::optional<float> sy = args.size() > 5 ? sol::optional<float>(args[5].get<float>()) : sol::nullopt;
+			sol::optional<float> ox = args.size() > 6 ? sol::optional<float>(args[6].get<float>()) : sol::nullopt;
+			sol::optional<float> oy = args.size() > 7 ? sol::optional<float>(args[7].get<float>()) : sol::nullopt;
+			sol::optional<float> kx = args.size() > 8 ? sol::optional<float>(args[8].get<float>()) : sol::nullopt;
+			sol::optional<float> ky = args.size() > 9 ? sol::optional<float>(args[9].get<float>()) : sol::nullopt;
+
+			graphics::printText(text, font, x, y, lua, angle, sx, sy, ox, oy, kx, ky);
+		}
+		else {
+			// Case without font
+			float x = args[0].get<float>();
+			float y = args[1].get<float>();
+
+			// Extract optional parameters (angle, sx, sy, ox, oy, kx, ky)
+			sol::optional<float> angle = args.size() > 2 ? sol::optional<float>(args[2].get<float>()) : sol::nullopt;
+			sol::optional<float> sx = args.size() > 3 ? sol::optional<float>(args[3].get<float>()) : sol::nullopt;
+			sol::optional<float> sy = args.size() > 4 ? sol::optional<float>(args[4].get<float>()) : sol::nullopt;
+			sol::optional<float> ox = args.size() > 5 ? sol::optional<float>(args[5].get<float>()) : sol::nullopt;
+			sol::optional<float> oy = args.size() > 6 ? sol::optional<float>(args[6].get<float>()) : sol::nullopt;
+			sol::optional<float> kx = args.size() > 7 ? sol::optional<float>(args[7].get<float>()) : sol::nullopt;
+			sol::optional<float> ky = args.size() > 8 ? sol::optional<float>(args[8].get<float>()) : sol::nullopt;
+
+			graphics::printText(text, x, y, lua, angle, sx, sy, ox, oy, kx, ky);
+		}
+		});
 
 	lua["mo"]["graphics"] = graphics;
 }
 
 #pragma endregion
 
-#pragma region Math Region
-
-
-
-
-namespace math {
-	class Example {
-	public:
-		Example(int value) : value(value) {}
-
-		void show_value() const {
-			std::cout << "The value is: " << value << std::endl;
-		}
-
-		void update_value(int new_value) {
-			value = new_value;
-			std::cout << "Value updated to: " << value << std::endl;
-		}
-
-	private:
-		int value;
-	};
-	
-
-	void bindMathModule(sol::state &lua) {
-		// Create the 'math' table
-		sol::table math = lua.create_table();
-
-		// Bind the Example class to the 'math' table
-		math.new_usertype<Example>(
-			"Example",
-			sol::constructors<Example(int)>(),  // Bind the constructor
-			"show_value", &Example::show_value,  // Bind the show_value method
-			"update_value", &Example::update_value  // Bind the update_value method
-		);
-
-		// Ensure 'mo' table exists
-		if (!lua["mo"].valid()) {
-			lua["mo"] = lua.create_table();
-		}
-
-		// Assign the 'math' table to 'mo.math'
-		lua["mo"]["math"] = math;
-	}
-
-
-	class TransformWrapper {
-	public:
-		TransformWrapper() = default;
-		TransformWrapper(const TransformWrapper &other) : transform(other.transform) {}
-
-		// Methods to interact with sf::Transform
-		void translate(float x, float y) {
-			transform.translate(x, y);
-		}
-
-		void rotate(float angle) {
-			transform.rotate(angle);
-		}
-
-		void scale(float factorX, float factorY) {
-			transform.scale(factorX, factorY);
-		}
-
-		void combine(const TransformWrapper &other) {
-			transform.combine(other.transform);
-		}
-
-		sol::table transformPoint(float x, float y, sol::state &lua) const {
-			sf::Vector2f result = transform.transformPoint(x, y);
-			sol::table pointTable = lua.create_table();
-			pointTable["x"] = result.x;
-			pointTable["y"] = result.y;
-			return pointTable;
-		}
-
-		// Optionally, expose matrix as a Lua table
-		 // Expose matrix as a Lua table
-		sol::table getMatrix(sol::state &lua) const {
-			const float *matrix = transform.getMatrix();
-			sol::table matrixTable = lua.create_table();
-			matrixTable["a"] = matrix[0];
-			matrixTable["b"] = matrix[1];
-			matrixTable["c"] = matrix[2];
-			matrixTable["d"] = matrix[4];
-			matrixTable["e"] = matrix[5];
-			matrixTable["f"] = matrix[6];
-			matrixTable["g"] = matrix[8];
-			matrixTable["h"] = matrix[9];
-			matrixTable["i"] = matrix[10];
-			return matrixTable;
-		}
-
-		// Methods to access sf::Transform directly
-		const sf::Transform &getTransform() const {
-			return transform;
-		}
-
-	private:
-		sf::Transform transform;
-	};
-	
-
-	// Function to bind the TransformWrapper class to Lua
-	void bindTransformWrapper(sol::state &lua) {
-		lua.new_usertype<TransformWrapper>(
-			"Transform",
-			sol::constructors<TransformWrapper(), TransformWrapper(const TransformWrapper &)>(),
-			"translate", &TransformWrapper::translate,
-			"rotate", &TransformWrapper::rotate,
-			"scale", &TransformWrapper::scale,
-			"combine", &TransformWrapper::combine,
-			"transformPoint", [&](const TransformWrapper &self, float x, float y) -> sol::table {
-				// Use the Lua state available in this scope
-				return self.transformPoint(x, y, lua);
-			},
-			"getMatrix", [&lua](const TransformWrapper &self) -> sol::table {
-				return self.getMatrix(lua);
-			}
-		);
-	}
-
-
-	// Function to bind the sf::Transform class to Lua
-	
-	
-
-}
-
-
-#pragma endregion
 
 
 #pragma region Window Module
@@ -988,7 +1346,7 @@ int main() {
 	// Might remove exceptions since that does not seem to catch it anyways
 	try {
 		//Load and execute Lua script from file
-		sol::protected_function_result result = lua.script_file("script.lua");
+		sol::protected_function_result result = lua.script_file("test_printing_text.lua");
 
 		if (!result.valid()) {
 			sol::error err = result;

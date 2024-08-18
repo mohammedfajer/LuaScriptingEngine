@@ -524,16 +524,16 @@ namespace graphics {
 	// TODO(mo): This needs to get transform for rotation, scale, origin, shear etc..
 	// Function to draw wrapped text with alignment
 	void drawWrappedText(sf::RenderTexture *canvas, const std::vector<std::string> &lines, sf::Font &font, u32 characterSize,
-		f32 x, f32 y, f32 limit, TextAlignment alignment = TextAlignment::Left, TextParams params, f32 lineSpacing = 5.0f) {
+		f32 x, f32 y, f32 limit, TextAlignment alignment = TextAlignment::Left, f32 lineSpacing = 5.0f) {
 		sf::Text sfText;
 		sfText.setFont(font);
 		sfText.setCharacterSize(characterSize);
 		sfText.setFillColor(sf::Color::White);
 		
 		//TODO(mo) add the shearing as well.
-		sfText.setRotation(params.r);
-		sfText.setScale(params.sx, params.sy);
-		sfText.setOrigin(params.ox, params.oy);
+		//sfText.setRotation(params.r);
+		//sfText.setScale(params.sx, params.sy);
+		//sfText.setOrigin(params.ox, params.oy);
 
 
 
@@ -1322,7 +1322,7 @@ namespace timer {
 #pragma endregion
 
 
-int main() {
+int OLD() {
 	sf::Clock clock;
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::io); // sol::lib::package i think its used to give us the ability to `require` modules, maybe ?

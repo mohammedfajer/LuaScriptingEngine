@@ -73,3 +73,36 @@
 https://gafferongames.com/post/fix_your_timestep/
 https://www.iforce2d.net/b2dtut/collision-callbacks
 https://github.com/SFML/SFML/wiki/Sources
+
+
+
+Particles Editor
+TilemapEditor
+Tilemap Editor and Systems
+	Layers, Objects, Tilemap, Tileset, Aniamted Tiles, Drawing
+Levels, Scenes, Transition Effects
+Sprite Animation
+Box2D API
+Skeletal Animation
+Networking
+AI
+--------------------------------------------------------------------
+
+
+External
+-------------------
+Find Tilesets
+Make Tilemaps
+Export Tilemaps
+
+Internal
+-------------------
+Load, Parse Tilemaps in game C++
+Extract all information
+Draw Map
+Handle Collision
+Handle Animation
+etc...
+
+========================================
+Editor

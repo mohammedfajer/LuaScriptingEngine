@@ -122,7 +122,7 @@ void SliderSFML::draw(sf::RenderWindow &window)
 		std::to_string((int)sliderValue), 15));
 }
 
-int main()
+int CustomEntryPointUISlider()
 {
 	sf::RenderWindow window(sf::VideoMode(500, 500), "Slider!");
 	window.setFramerateLimit(60);

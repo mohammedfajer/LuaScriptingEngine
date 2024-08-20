@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{88495793-7ee1-4de0-b5c6-5a9f6a71af2c}</ProjectGuid>
-    <RootNamespace>LuaScripting2D</RootNamespace>
+    <ProjectGuid>{5fbe326b-393d-490e-8b05-33e28d6cfc15}</ProjectGuid>
+    <RootNamespace>ParticlesEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -42,8 +42,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -76,14 +76,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\include;$(ProjectDir)Dependencies\lua524\include;$(ProjectDir)Dependencies\sol2-3.2.2/sol2-3.2.2/single/include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>..\Dependencies\imgui;..\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(ProjectDir)Dependencies\lua524;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;sfml-graphics-d.lib;sfml-system-d.lib;sfml-window-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,14 +108,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\include;$(ProjectDir)Dependencies\lua524\include;$(ProjectDir)Dependencies\sol2-3.2.2/sol2-3.2.2/single/include;$(ProjectDir)Dependencies\enet-1.3.18\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>..\Dependencies\imgui;..\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(ProjectDir)Dependencies\lua524;$(ProjectDir)Dependencies\box2d-2.4.1\box2d-2.4.1\build\bin\Debug;$(ProjectDir)Dependencies\enet-1.3.18</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua54.lib;sfml-audio-d.lib;sfml-graphics-d.lib;sfml-main-d.lib;sfml-network-d.lib;sfml-system-d.lib;sfml-window-d.lib;box2d.lib;enet64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Dependencies\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;sfml-graphics-d.lib;sfml-system-d.lib;sfml-window-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,89 +135,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="audio.cpp" />
-    <ClCompile Include="core.cpp" />
-    <ClCompile Include="Dependencies\imgui\imgui-SFML.cpp" />
-    <ClCompile Include="Dependencies\imgui\imgui.cpp" />
-    <ClCompile Include="Dependencies\imgui\imgui_draw.cpp" />
-    <ClCompile Include="Dependencies\imgui\imgui_tables.cpp" />
-    <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="event.cpp" />
-    <ClCompile Include="graphics.cpp" />
-    <ClCompile Include="input.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui-SFML.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\Dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="physics.cpp" />
-    <ClCompile Include="sfml_audio.cpp" />
-    <ClCompile Include="sfml_basic_shapes.cpp" />
-    <ClCompile Include="sfml_basic_ui.cpp" />
-    <ClCompile Include="sfml_box2d_basic.cpp" />
-    <ClCompile Include="sfml_camera_and_screenshake_tilemap.cpp" />
-    <ClCompile Include="sfml_cool_shader_effect.cpp" />
-    <ClCompile Include="sfml_curves.cpp" />
-    <ClCompile Include="sfml_handling_input.cpp" />
-    <ClCompile Include="sfml_joystick.cpp" />
-    <ClCompile Include="sfml_lighting.cpp" />
-    <ClCompile Include="sfml_object_hierarchies_scene_graph.cpp" />
-    <ClCompile Include="sfml_particles.cpp" />
-    <ClCompile Include="sfml_push_pop_transformations.cpp" />
-    <ClCompile Include="sfml_raycasting.cpp" />
-    <ClCompile Include="sfml_resolutionIndependent_letterboxing.cpp" />
-    <ClCompile Include="sfml_rotate_around_center.cpp" />
-    <ClCompile Include="sfml_shaders.cpp" />
-    <ClCompile Include="sfml_shapes.cpp" />
-    <ClCompile Include="sfml_shear_transformations.cpp" />
-    <ClCompile Include="sfml_spritesheet_animation.cpp" />
-    <ClCompile Include="sfml_textures.cpp" />
-    <ClCompile Include="sfml_texture_filtering.cpp" />
-    <ClCompile Include="sfml_text_alignment.cpp" />
-    <ClCompile Include="sfml_tilemap_tiled.cpp" />
-    <ClCompile Include="sfml_timers_and_timelines.cpp" />
-    <ClCompile Include="sfml_timing.cpp" />
-    <ClCompile Include="sfml_ui_sliders.cpp" />
-    <ClCompile Include="sfml_virtual_resolution.cpp" />
-    <ClCompile Include="sfml_virtual_resolution_views.cpp" />
-    <ClCompile Include="sfml_window.cpp" />
-    <ClCompile Include="sfml_working_with_text.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\grayscale.frag" />
-    <None Include="data\grayscale.vert" />
-    <None Include="data\pulse.frag" />
-    <None Include="data\pulse.vert" />
-    <None Include="player.lua" />
-    <None Include="script.lua" />
-    <None Include="test_printing_text.lua" />
+    <ClInclude Include="..\Dependencies\imgui\imconfig-SFML.h" />
+    <ClInclude Include="..\Dependencies\imgui\imconfig.h" />
+    <ClInclude Include="..\Dependencies\imgui\imgui-SFML.h" />
+    <ClInclude Include="..\Dependencies\imgui\imgui-SFML_export.h" />
+    <ClInclude Include="..\Dependencies\imgui\imgui.h" />
+    <ClInclude Include="..\Dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="..\Dependencies\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\Dependencies\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\Dependencies\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bunny.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="audio.h" />
-    <ClInclude Include="core.h" />
-    <ClInclude Include="Dependencies\imgui\imconfig-SFML.h" />
-    <ClInclude Include="Dependencies\imgui\imconfig.h" />
-    <ClInclude Include="Dependencies\imgui\imgui-SFML.h" />
-    <ClInclude Include="Dependencies\imgui\imgui-SFML_export.h" />
-    <ClInclude Include="Dependencies\imgui\imgui.h" />
-    <ClInclude Include="Dependencies\imgui\imgui_internal.h" />
-    <ClInclude Include="Dependencies\imgui\imstb_rectpack.h" />
-    <ClInclude Include="Dependencies\imgui\imstb_textedit.h" />
-    <ClInclude Include="Dependencies\imgui\imstb_truetype.h" />
-    <ClInclude Include="event.h" />
-    <ClInclude Include="graphics.h" />
-    <ClInclude Include="input.h" />
-    <ClInclude Include="physics.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="data\music.mp3" />
-    <Media Include="data\soundEffect.mp3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="TODO.txt" />
+    <Image Include="blobTexture.png" />
+    <Image Include="circleTexture.png" />
+    <Image Include="spritesheetTexture.png" />
+    <Image Include="starTexture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

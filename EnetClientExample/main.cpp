@@ -20,7 +20,7 @@ const int SCREEN_HEIGHT = 600;
 const float SQUARE_SIZE = 50.0f;
 const float PLAYER_SPEED = 200.0f;
 
-int main() {
+int CustomEntryPointClient() {
     if (enet_initialize() != 0) {
         std::cerr << "Failed to initialize ENet!" << std::endl;
         return EXIT_FAILURE;
